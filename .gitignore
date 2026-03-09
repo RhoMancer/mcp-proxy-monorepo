@@ -44,3 +44,29 @@ test-data/
 
 # Changelog (local only)
 CHANGELOG.md
+
+# Claude Code local configuration (user-specific)
+.claude/
+
+# Temporary files
+.tmp/
+*.tmp
+
+# Stack dump files (WSL/bash crashes)
+*.stackdump
+
+# Python cache
+__pycache__/
+**/__pycache__/
+*.pyc
+*.pyo
+
+# Binary executables (platform-specific, installed via package managers)
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Test coverage reports (generated artifacts)
+coverage/
+**/coverage/
