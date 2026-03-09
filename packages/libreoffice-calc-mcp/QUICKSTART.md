@@ -84,9 +84,15 @@ The spreadsheet file must already be on your computer.
 - Make sure LibreOffice is installed
 - Close all LibreOffice windows first
 
+**"LibreOffice Calc connector isn't currently running":**
+- This means the proxy wasn't started with `start.bat` or `npm start`
+- The `start.bat` script **automatically starts LibreOffice** for you
+- Double-click `start.bat` again and wait for "✓ LibreOffice started" message
+
 **Claude says "can't connect":**
 - Did you double-click `start.bat`?
 - Wait 10 seconds after starting before asking Claude
+- Check http://127.0.0.1:8081/health in your browser
 
 **"File not found":**
 - Use the FULL path: `C:/Users/...`

@@ -82,23 +82,31 @@ Complete LibreOffice Calc integration with HTTP proxy and Python MCP server.
 **Features:**
 - 11 MCP tools: read/write cells, ranges, formulas; sheet management; search
 - UNO-based integration with LibreOffice
+- **Auto-starts LibreOffice in socket mode** — no manual configuration needed
 - Windows auto-configured for LibreOffice's bundled Python
 - HTTP proxy at http://127.0.0.1:8081
 - Optional Cloudflare tunnel for remote access
 
-**Setup:**
+**Setup (Recommended — Auto-start):**
 ```bash
-# 1. Start LibreOffice with socket listening
-"C:\Program Files\LibreOffice\program\soffice.exe" --accept="socket,host=localhost,port=2002;urp;StarOffice.ServiceManager"
-
-# 2. Start the proxy
 cd packages/libreoffice-calc-mcp
-npm start
-
-# 3. Test
-node test.js          # Direct MCP test
-node test-proxy.js    # HTTP proxy test
+npm start          # Automatically starts LibreOffice + proxy
 ```
+
+**Quick Start (Windows):**
+Double-click `packages/libreoffice-calc-mcp/start.bat`
+
+**Advanced: Manual LibreOffice Start**
+If you need to run LibreOffice separately (e.g., for development):
+```bash
+"C:\Program Files\LibreOffice\program\soffice.exe" --accept="socket,host=localhost,port=2002;urp;StarOffice.ServiceManager"
+cd packages/libreoffice-calc-mcp
+npm run start:proxy-only
+```
+
+**Troubleshooting:**
+- **Error: "LibreOffice Calc connector isn't currently running"** → Run `npm start` which auto-starts LibreOffice
+- See `packages/libreoffice-calc-mcp/QUICKSTART.md` for detailed setup
 
 **Note:** On Windows, the MCP SDK must be installed in LibreOffice's Python:
 ```bash

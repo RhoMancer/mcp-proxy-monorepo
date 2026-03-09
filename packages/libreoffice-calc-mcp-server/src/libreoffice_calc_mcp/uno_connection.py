@@ -100,11 +100,26 @@ class UNOConnection:
         try:
             self._context = self._resolver.resolve(connection_string)
         except Exception as e:
-            raise LibreOfficeConnectionError(
-                f"Could not connect to LibreOffice at {self.host}:{self.port}. "
-                f"Ensure LibreOffice is running with: "
-                f"soffice --accept='socket,host={self.host},port={self.port};urp;StarOffice.ServiceManager'"
-            ) from e
+            # Detect if we're running in a proxy context
+            in_proxy_context = os.getenv("MCP_PROXY_PORT") or os.getenv("MCP_LIBREOFFICE_PATH")
+
+            if in_proxy_context:
+                # Running through the proxy - more technical error
+                raise LibreOfficeConnectionError(
+                    f"Could not connect to LibreOffice at {self.host}:{self.port}. "
+                    f"Make sure you ran 'npm start' or 'node start.js' first to auto-start LibreOffice."
+                ) from e
+            else:
+                # Running directly - helpful instructions
+                raise LibreOfficeConnectionError(
+                    f"LibreOffice Calc connector isn't currently running.\n\n"
+                    f"To fix this:\n"
+                    f"  1. Use the proxy wrapper which auto-starts LibreOffice:\n"
+                    f"     - Windows: Double-click 'start.bat' in packages/libreoffice-calc-mcp/\n"
+                    f"     - Or run: node packages/libreoffice-calc-mcp/start.js\n\n"
+                    f"  2. Or manually start LibreOffice with socket mode:\n"
+                    f"     soffice --accept=\"socket,host={self.host},port={self.port};urp;StarOffice.ServiceManager\""
+                ) from e
 
         # Get the service manager
         self._service_manager = self._context.ServiceManager

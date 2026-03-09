@@ -370,6 +370,21 @@ async def call_tool(name: str, arguments: dict[str, Any]) -> list[TextContent]:
             return await _find_text(arguments)
         else:
             return [TextContent(type="text", text=f"Unknown tool: {name}")]
+    except LibreOfficeConnectionError as e:
+        # Provide structured error for better client handling
+        error_msg = str(e)
+        return [TextContent(
+            type="text",
+            text=f"""LibreOffice Connection Error
+
+{error_msg}
+
+Quick Start:
+  Windows: Double-click packages/libreoffice-calc-mcp/start.bat
+  Cross-platform: cd packages/libreoffice-calc-mcp && npm start
+
+For help, see: packages/libreoffice-calc-mcp/QUICKSTART.md"""
+        )]
     except Exception as e:
         return [TextContent(type="text", text=f"Error: {str(e)}")]
 
@@ -396,8 +411,21 @@ async def _read_cell(arguments: dict[str, Any]) -> list[TextContent]:
 
         return [TextContent(type="text", text=json.dumps(result, indent=2))]
 
-    except (LibreOfficeConnectionError, CalcError) as e:
-        return [TextContent(type="text", text=f"Error: {str(e)}")]
+    except LibreOfficeConnectionError as e:
+        return [TextContent(
+            type="text",
+            text=f"""LibreOffice Connection Error
+
+{str(e)}
+
+Quick Start:
+  Windows: Double-click packages/libreoffice-calc-mcp/start.bat
+  Cross-platform: cd packages/libreoffice-calc-mcp && npm start
+
+For help, see: packages/libreoffice-calc-mcp/QUICKSTART.md"""
+        )]
+    except CalcError as e:
+        return [TextContent(type="text", text=f"Calc Error: {str(e)}")]
     except Exception as e:
         return [TextContent(type="text", text=f"Unexpected error: {str(e)}")]
 
@@ -425,8 +453,21 @@ async def _write_cell(arguments: dict[str, Any]) -> list[TextContent]:
 
         return [TextContent(type="text", text=json.dumps(result, indent=2))]
 
-    except (LibreOfficeConnectionError, CalcError) as e:
-        return [TextContent(type="text", text=f"Error: {str(e)}")]
+    except LibreOfficeConnectionError as e:
+        return [TextContent(
+            type="text",
+            text=f"""LibreOffice Connection Error
+
+{str(e)}
+
+Quick Start:
+  Windows: Double-click packages/libreoffice-calc-mcp/start.bat
+  Cross-platform: cd packages/libreoffice-calc-mcp && npm start
+
+For help, see: packages/libreoffice-calc-mcp/QUICKSTART.md"""
+        )]
+    except CalcError as e:
+        return [TextContent(type="text", text=f"Calc Error: {str(e)}")]
     except Exception as e:
         return [TextContent(type="text", text=f"Unexpected error: {str(e)}")]
 
@@ -450,8 +491,21 @@ async def _get_range(arguments: dict[str, Any]) -> list[TextContent]:
 
         return [TextContent(type="text", text=json.dumps(result, indent=2))]
 
-    except (LibreOfficeConnectionError, CalcError) as e:
-        return [TextContent(type="text", text=f"Error: {str(e)}")]
+    except LibreOfficeConnectionError as e:
+        return [TextContent(
+            type="text",
+            text=f"""LibreOffice Connection Error
+
+{str(e)}
+
+Quick Start:
+  Windows: Double-click packages/libreoffice-calc-mcp/start.bat
+  Cross-platform: cd packages/libreoffice-calc-mcp && npm start
+
+For help, see: packages/libreoffice-calc-mcp/QUICKSTART.md"""
+        )]
+    except CalcError as e:
+        return [TextContent(type="text", text=f"Calc Error: {str(e)}")]
     except Exception as e:
         return [TextContent(type="text", text=f"Unexpected error: {str(e)}")]
 
@@ -472,8 +526,21 @@ async def _list_sheets(arguments: dict[str, Any]) -> list[TextContent]:
 
         return [TextContent(type="text", text=json.dumps(result, indent=2))]
 
-    except (LibreOfficeConnectionError, CalcError) as e:
-        return [TextContent(type="text", text=f"Error: {str(e)}")]
+    except LibreOfficeConnectionError as e:
+        return [TextContent(
+            type="text",
+            text=f"""LibreOffice Connection Error
+
+{str(e)}
+
+Quick Start:
+  Windows: Double-click packages/libreoffice-calc-mcp/start.bat
+  Cross-platform: cd packages/libreoffice-calc-mcp && npm start
+
+For help, see: packages/libreoffice-calc-mcp/QUICKSTART.md"""
+        )]
+    except CalcError as e:
+        return [TextContent(type="text", text=f"Calc Error: {str(e)}")]
     except Exception as e:
         return [TextContent(type="text", text=f"Unexpected error: {str(e)}")]
 
@@ -499,8 +566,21 @@ async def _read_cell_formula(arguments: dict[str, Any]) -> list[TextContent]:
 
         return [TextContent(type="text", text=json.dumps(result, indent=2))]
 
-    except (LibreOfficeConnectionError, CalcError) as e:
-        return [TextContent(type="text", text=f"Error: {str(e)}")]
+    except LibreOfficeConnectionError as e:
+        return [TextContent(
+            type="text",
+            text=f"""LibreOffice Connection Error
+
+{str(e)}
+
+Quick Start:
+  Windows: Double-click packages/libreoffice-calc-mcp/start.bat
+  Cross-platform: cd packages/libreoffice-calc-mcp && npm start
+
+For help, see: packages/libreoffice-calc-mcp/QUICKSTART.md"""
+        )]
+    except CalcError as e:
+        return [TextContent(type="text", text=f"Calc Error: {str(e)}")]
     except Exception as e:
         return [TextContent(type="text", text=f"Unexpected error: {str(e)}")]
 
@@ -528,8 +608,21 @@ async def _write_cell_formula(arguments: dict[str, Any]) -> list[TextContent]:
 
         return [TextContent(type="text", text=json.dumps(result, indent=2))]
 
-    except (LibreOfficeConnectionError, CalcError) as e:
-        return [TextContent(type="text", text=f"Error: {str(e)}")]
+    except LibreOfficeConnectionError as e:
+        return [TextContent(
+            type="text",
+            text=f"""LibreOffice Connection Error
+
+{str(e)}
+
+Quick Start:
+  Windows: Double-click packages/libreoffice-calc-mcp/start.bat
+  Cross-platform: cd packages/libreoffice-calc-mcp && npm start
+
+For help, see: packages/libreoffice-calc-mcp/QUICKSTART.md"""
+        )]
+    except CalcError as e:
+        return [TextContent(type="text", text=f"Calc Error: {str(e)}")]
     except Exception as e:
         return [TextContent(type="text", text=f"Unexpected error: {str(e)}")]
 
@@ -556,8 +649,21 @@ async def _write_range(arguments: dict[str, Any]) -> list[TextContent]:
 
         return [TextContent(type="text", text=json.dumps(result, indent=2))]
 
-    except (LibreOfficeConnectionError, CalcError) as e:
-        return [TextContent(type="text", text=f"Error: {str(e)}")]
+    except LibreOfficeConnectionError as e:
+        return [TextContent(
+            type="text",
+            text=f"""LibreOffice Connection Error
+
+{str(e)}
+
+Quick Start:
+  Windows: Double-click packages/libreoffice-calc-mcp/start.bat
+  Cross-platform: cd packages/libreoffice-calc-mcp && npm start
+
+For help, see: packages/libreoffice-calc-mcp/QUICKSTART.md"""
+        )]
+    except CalcError as e:
+        return [TextContent(type="text", text=f"Calc Error: {str(e)}")]
     except Exception as e:
         return [TextContent(type="text", text=f"Unexpected error: {str(e)}")]
 
@@ -579,8 +685,21 @@ async def _create_sheet(arguments: dict[str, Any]) -> list[TextContent]:
 
         return [TextContent(type="text", text=json.dumps(result, indent=2))]
 
-    except (LibreOfficeConnectionError, CalcError) as e:
-        return [TextContent(type="text", text=f"Error: {str(e)}")]
+    except LibreOfficeConnectionError as e:
+        return [TextContent(
+            type="text",
+            text=f"""LibreOffice Connection Error
+
+{str(e)}
+
+Quick Start:
+  Windows: Double-click packages/libreoffice-calc-mcp/start.bat
+  Cross-platform: cd packages/libreoffice-calc-mcp && npm start
+
+For help, see: packages/libreoffice-calc-mcp/QUICKSTART.md"""
+        )]
+    except CalcError as e:
+        return [TextContent(type="text", text=f"Calc Error: {str(e)}")]
     except Exception as e:
         return [TextContent(type="text", text=f"Unexpected error: {str(e)}")]
 
@@ -602,8 +721,21 @@ async def _delete_sheet(arguments: dict[str, Any]) -> list[TextContent]:
 
         return [TextContent(type="text", text=json.dumps(result, indent=2))]
 
-    except (LibreOfficeConnectionError, CalcError) as e:
-        return [TextContent(type="text", text=f"Error: {str(e)}")]
+    except LibreOfficeConnectionError as e:
+        return [TextContent(
+            type="text",
+            text=f"""LibreOffice Connection Error
+
+{str(e)}
+
+Quick Start:
+  Windows: Double-click packages/libreoffice-calc-mcp/start.bat
+  Cross-platform: cd packages/libreoffice-calc-mcp && npm start
+
+For help, see: packages/libreoffice-calc-mcp/QUICKSTART.md"""
+        )]
+    except CalcError as e:
+        return [TextContent(type="text", text=f"Calc Error: {str(e)}")]
     except Exception as e:
         return [TextContent(type="text", text=f"Unexpected error: {str(e)}")]
 
@@ -627,8 +759,21 @@ async def _rename_sheet(arguments: dict[str, Any]) -> list[TextContent]:
 
         return [TextContent(type="text", text=json.dumps(result, indent=2))]
 
-    except (LibreOfficeConnectionError, CalcError) as e:
-        return [TextContent(type="text", text=f"Error: {str(e)}")]
+    except LibreOfficeConnectionError as e:
+        return [TextContent(
+            type="text",
+            text=f"""LibreOffice Connection Error
+
+{str(e)}
+
+Quick Start:
+  Windows: Double-click packages/libreoffice-calc-mcp/start.bat
+  Cross-platform: cd packages/libreoffice-calc-mcp && npm start
+
+For help, see: packages/libreoffice-calc-mcp/QUICKSTART.md"""
+        )]
+    except CalcError as e:
+        return [TextContent(type="text", text=f"Calc Error: {str(e)}")]
     except Exception as e:
         return [TextContent(type="text", text=f"Unexpected error: {str(e)}")]
 
@@ -659,8 +804,21 @@ async def _find_text(arguments: dict[str, Any]) -> list[TextContent]:
 
         return [TextContent(type="text", text=json.dumps(result, indent=2))]
 
-    except (LibreOfficeConnectionError, CalcError) as e:
-        return [TextContent(type="text", text=f"Error: {str(e)}")]
+    except LibreOfficeConnectionError as e:
+        return [TextContent(
+            type="text",
+            text=f"""LibreOffice Connection Error
+
+{str(e)}
+
+Quick Start:
+  Windows: Double-click packages/libreoffice-calc-mcp/start.bat
+  Cross-platform: cd packages/libreoffice-calc-mcp && npm start
+
+For help, see: packages/libreoffice-calc-mcp/QUICKSTART.md"""
+        )]
+    except CalcError as e:
+        return [TextContent(type="text", text=f"Calc Error: {str(e)}")]
     except Exception as e:
         return [TextContent(type="text", text=f"Unexpected error: {str(e)}")]
 
