@@ -278,6 +278,8 @@ The proxy works with any OAuth 2.0 provider. Example configurations are included
 - **Auth0** - See `examples/oauth-auth0.config.js`
 - **Any OAuth 2.0 provider** - Provide the authorization/token URLs
 
+> **📖 Detailed Setup Guide**: For step-by-step instructions on configuring OAuth with GitHub, Google, Auth0, GitLab, Azure AD, and more, see the [OAuth Provider Setup Guide](docs/oauth-setup-guide.md).
+
 ### Authentication Endpoints
 
 | Endpoint | Purpose |
