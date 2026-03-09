@@ -92,12 +92,12 @@ export function validateOAuthConfig(config) {
   for (const field of secretFields) {
     if (provider[field]) {
       const value = provider[field];
-      // Check if it looks like a hardcoded placeholder
-      if (['your_', 'your-', 'replace_', 'change_', 'example_'].some(prefix => value.toLowerCase().startsWith(prefix))) {
+      // Check if it looks like a hardcoded placeholder (only if value is a string)
+      if (typeof value === 'string' && ['your_', 'your-', 'replace_', 'change_', 'example_'].some(prefix => value.toLowerCase().startsWith(prefix))) {
         result.warnings.push(`provider.${field} appears to contain a placeholder value`);
       }
-      // Check if it's suspiciously short for a secret
-      if (field === 'clientSecret' && value.length < 16) {
+      // Check if it's suspiciously short for a secret (only if value is a string)
+      if (field === 'clientSecret' && typeof value === 'string' && value.length < 16) {
         result.warnings.push(`provider.${field} is unusually short (${value.length} chars), secrets should be longer`);
       }
     }
@@ -199,7 +199,7 @@ export function validateOAuthConfig(config) {
  * @param {string} filePath - Path to configuration file
  * @returns {ValidationResult}
  */
-export function validateOAuthConfigFile(filePath) {
+export async function validateOAuthConfigFile(filePath) {
   const result = {
     valid: true,
     errors: [],
