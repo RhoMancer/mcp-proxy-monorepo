@@ -88,7 +88,7 @@ function isLibreOfficeProcessRunning() {
 }
 
 /**
- * Start LibreOffice in socket listening mode
+ * Start LibreOffice in socket listening mode with verification
  */
 function startLibreOffice(sofficePath) {
   return new Promise((resolve, reject) => {
@@ -103,10 +103,9 @@ function startLibreOffice(sofficePath) {
     console.log(`  Path: ${sofficePath}`);
     console.log(`  Socket: ${CONFIG.host}:${CONFIG.port}`);
 
-    // Use START command to run detached on Windows
-    const startCmd = spawn('cmd', ['/c', 'start', '/b', sofficePath, ...args], {
-      detached: false,
-      stdio: 'ignore',
+    // Use exec to run LibreOffice - this works like a shell command
+    // and properly detaches on Windows
+    const startCmd = exec(`"${sofficePath}" ${args.join(' ')}`, {
       windowsHide: true,
     });
 
@@ -114,10 +113,38 @@ function startLibreOffice(sofficePath) {
       reject(new Error(`Failed to start LibreOffice: ${err.message}`));
     });
 
-    // Give LibreOffice time to start and open the socket
-    setTimeout(() => {
-      resolve();
-    }, 3000);
+    console.log(`  Process spawned, waiting for socket to be ready...`);
+
+    // Verify socket is actually listening with retries
+    let retries = 15; // Increased to 15 seconds
+    const checkInterval = 1000; // 1 second
+
+    const checkSocket = async () => {
+      retries--;
+      const isListening = await isLibreOfficeRunning();
+
+      if (isListening) {
+        console.log('✓ LibreOffice socket is listening\n');
+        resolve();
+      } else if (retries > 0) {
+        // Still waiting, check again
+        setTimeout(checkSocket, checkInterval);
+      } else {
+        // Timed out - provide helpful troubleshooting
+        reject(new Error(
+          `LibreOffice was started but socket never became ready.\n` +
+          `  - Waited 15 seconds for port ${CONFIG.host}:${CONFIG.port}\n\n` +
+          `TROUBLESHOOTING:\n` +
+          `  1. Check if LibreOffice is already running (close it first)\n` +
+          `  2. Try starting manually to see errors:\n` +
+          `     "${sofficePath}" --accept="socket,host=${CONFIG.host},port=${CONFIG.port};urp;StarOffice.ServiceManager" --headless\n` +
+          `  3. Check if another app is using port ${CONFIG.port} (netstat -an | findstr :${CONFIG.port})`
+        ));
+      }
+    };
+
+    // Start checking after 3 seconds (LibreOffice takes time to start)
+    setTimeout(checkSocket, 3000);
   });
 }
 
@@ -167,7 +194,14 @@ async function main() {
 
     try {
       await startLibreOffice(sofficePath);
-      console.log('✓ LibreOffice started\n');
+      // Final verification - double check socket is still listening
+      const finalCheck = await isLibreOfficeRunning();
+      if (!finalCheck) {
+        console.error('❌ LibreOffice started but socket is not listening.');
+        console.error('   This usually means LibreOffice crashed during startup.');
+        console.error('   Try starting LibreOffice manually to see error messages.');
+        process.exit(1);
+      }
     } catch (err) {
       console.error(`❌ ${err.message}`);
       process.exit(1);
