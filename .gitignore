@@ -1,0 +1,46 @@
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+**/.env
+**/.env.local
+
+# Logs
+*.log
+npm-debug.log*
+**/*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Cloudflare tunnel credentials
+**/credentials/
+**/*.credentials.json
+!.gitkeep
+
+# Build artifacts
+dist/
+build/
+
+# Test data
+test-data/
+
+# Chainlink task tracking (local only)
+.chainlink/
+
+# Cloudflare tunnel configs (local only)
+**/config.yml
+
+# Changelog (local only)
+CHANGELOG.md

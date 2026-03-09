@@ -1,0 +1,24 @@
+# Cloudflare Tunnel Configuration Example for hevy-mcp Proxy
+#
+# This is an OPTIONAL configuration for remote access via Cloudflare Tunnel.
+# To use this:
+# 1. Create a Cloudflare tunnel: cloudflared tunnel create <tunnel-name>
+# 2. Copy this file to config.yml
+# 3. Replace the tunnel ID and credentials file path with your values
+# 4. Update the hostname to your desired domain
+# 5. Run: cloudflared tunnel --config config.yml run
+
+# Replace with your actual tunnel ID
+tunnel: your-tunnel-id-here
+
+# Replace with the path to your tunnel credentials file
+credentials-file: C:/Users/YOUR_USERNAME/.cloudflared/your-tunnel-id-here.json
+
+ingress:
+  # Main hevy-mcp proxy endpoint
+  # Replace with your custom domain
+  - hostname: your-hevy-mcp-domain.example.com
+    service: http://localhost:8080
+
+  # Fallback: serve everything else to localhost:8080
+  - service: http://localhost:8080

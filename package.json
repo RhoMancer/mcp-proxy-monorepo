@@ -1,0 +1,34 @@
+{
+  "name": "mcp-proxy-monorepo",
+  "version": "1.0.0",
+  "description": "Monorepo for MCP HTTP proxy servers and the generic proxy package",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:proxy": "npm run dev -w packages/mcp-http-proxy",
+    "dev:hevy": "npm run dev -w packages/hevy-mcp-proxy",
+    "dev:libreoffice": "npm run dev -w packages/libreoffice-calc-mcp",
+    "start:hevy": "npm start -w packages/hevy-mcp-proxy",
+    "start:libreoffice": "npm start -w packages/libreoffice-calc-mcp",
+    "start:libreoffice:proxy-only": "npm run start:proxy-only -w packages/libreoffice-calc-mcp",
+    "install:all": "npm install",
+    "clean": "npm run clean -ws --if-present"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "proxy",
+    "monorepo"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "npm-workspace": "^0.1.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
