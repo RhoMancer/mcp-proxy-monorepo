@@ -9,7 +9,10 @@
 
 import { spawn } from 'child_process';
 import express from 'express';
+import cookieParser from 'cookie-parser';
+import session from 'express-session';
 import dotenv from 'dotenv';
+import { OAuth2Auth } from './auth/OAuth2Auth.js';
 
 dotenv.config();
 
@@ -31,6 +34,9 @@ export class ProxyServer {
    * @param {Object} config.tunnel - Cloudflare tunnel configuration (optional)
    * @param {string} config.tunnel.domain - Custom domain for the tunnel
    * @param {string} config.tunnel.tunnelId - Cloudflare tunnel ID
+   * @param {Object} config.auth - OAuth 2.0 authentication configuration (optional)
+   * @param {Object} config.auth.provider - OAuth provider configuration
+   * @param {Object} config.auth.session - Session configuration
    */
   constructor(config) {
     this.config = config;
@@ -44,6 +50,21 @@ export class ProxyServer {
     this.pendingRequests = new Map();
     this.isInitialized = false;
 
+    // OAuth 2.0 Authentication (optional)
+    this.auth = null;
+    this.authEnabled = false;
+
+    if (config.auth) {
+      try {
+        this.auth = new OAuth2Auth(config.auth);
+        this.authEnabled = true;
+        console.log('✓ OAuth 2.0 authentication enabled');
+      } catch (error) {
+        console.warn(`⚠ Failed to enable OAuth 2.0: ${error.message}`);
+        console.warn('⚠ Running without authentication');
+      }
+    }
+
     this._setupMiddleware();
     this._setupRoutes();
   }
@@ -53,11 +74,25 @@ export class ProxyServer {
    * @private
    */
   _setupMiddleware() {
+    // Cookie parser (required for session management)
+    this.app.use(cookieParser());
+
+    // OAuth 2.0 session and passport middleware (if enabled)
+    if (this.authEnabled) {
+      this.app.use(session(this.auth.getSessionConfig()));
+      this.app.use(this.auth.getInitializeMiddleware());
+      this.app.use(this.auth.getSessionMiddleware());
+    }
+
     // CORS support for browser-based clients
     this.app.use((req, res, next) => {
       res.setHeader('Access-Control-Allow-Origin', '*');
       res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
       res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+      // Allow credentials for authenticated requests
+      if (this.authEnabled) {
+        res.setHeader('Access-Control-Allow-Credentials', 'true');
+      }
       if (req.method === 'OPTIONS') {
         return res.sendStatus(200);
       }
@@ -72,18 +107,29 @@ export class ProxyServer {
    * @private
    */
   _setupRoutes() {
-    // Health check endpoint
+    // Auth routes (if enabled)
+    if (this.authEnabled) {
+      this.app.use('/auth', this.auth.getAuthRoutes());
+    }
+
+    // Health check endpoint (always public)
     this.app.get('/health', (req, res) => {
       res.json({
         status: 'ok',
         mcpRunning: this.mcpProcess !== null,
         mcpInitialized: this.isInitialized,
-        server: this.config.mcp?.command || 'unknown'
+        server: this.config.mcp?.command || 'unknown',
+        authEnabled: this.authEnabled
       });
     });
 
+    // Apply authentication middleware to protected routes (if enabled)
+    const protectedMiddleware = this.authEnabled
+      ? this.auth.getAuthenticateMiddleware()
+      : ((req, res, next) => next());
+
     // SSE endpoint for server-sent events
-    this.app.get('/sse', async (req, res) => {
+    this.app.get('/sse', protectedMiddleware, async (req, res) => {
       res.setHeader('Content-Type', 'text/event-stream');
       res.setHeader('Cache-Control', 'no-cache');
       res.setHeader('Connection', 'keep-alive');
@@ -100,12 +146,12 @@ export class ProxyServer {
       });
     });
 
-    // Main message endpoints for JSON-RPC requests
-    this.app.post('/message', this._handleJsonRpcRequest.bind(this));
-    this.app.post('/messages', this._handleJsonRpcRequest.bind(this));
+    // Main message endpoints for JSON-RPC requests (protected)
+    this.app.post('/message', protectedMiddleware, this._handleJsonRpcRequest.bind(this));
+    this.app.post('/messages', protectedMiddleware, this._handleJsonRpcRequest.bind(this));
 
-    // List available tools
-    this.app.get('/tools', async (req, res) => {
+    // List available tools (protected)
+    this.app.get('/tools', protectedMiddleware, async (req, res) => {
       try {
         if (!this.mcpProcess) {
           this._spawnMcpProcess();
@@ -339,12 +385,22 @@ export class ProxyServer {
       console.log(`║  MCP HTTP Proxy Server                                ║`);
       console.log(`╠═══════════════════════════════════════════════════════╣`);
       console.log(`║  Status: Running                                     ║`);
+      console.log(`║  Auth: ${this.authEnabled ? 'Enabled ' : 'Disabled'}${' '.repeat(18)}║`);
       console.log(`║  URL:    http://${this.HOST}:${this.PORT}                    ║`);
       console.log(`║  Health: http://${this.HOST}:${this.PORT}/health               ║`);
+      if (this.authEnabled) {
+        console.log(`║  Login:  http://${this.HOST}:${this.PORT}/auth/login           ║`);
+      }
       console.log(`║  Tools:  http://${this.HOST}:${this.PORT}/tools                ║`);
       console.log(`║  SSE:    http://${this.HOST}:${this.PORT}/sse                  ║`);
       console.log(`╚═══════════════════════════════════════════════════════╝\n`);
-      console.log('Enter this URL in Claude Connectors:');
+      if (this.authEnabled) {
+        console.log('Authentication is ENABLED. First login at:');
+        console.log(`  http://${this.HOST}:${this.PORT}/auth/login\n`);
+        console.log('Then enter this URL in Claude Connectors:');
+      } else {
+        console.log('Enter this URL in Claude Connectors:');
+      }
       console.log(`  http://${this.HOST}:${this.PORT}/message\n`);
       console.log('Press Ctrl+C to stop\n');
 

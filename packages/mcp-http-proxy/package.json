@@ -10,7 +10,11 @@
   },
   "scripts": {
     "start": "node src/cli.js",
-    "dev": "node --watch src/cli.js"
+    "dev": "node --watch src/cli.js",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:run": "vitest run",
+    "test:coverage": "vitest run --coverage"
   },
   "keywords": [
     "mcp",
@@ -23,7 +27,17 @@
   "license": "MIT",
   "dependencies": {
     "express": "^4.18.2",
-    "dotenv": "^16.3.1"
+    "dotenv": "^16.3.1",
+    "passport": "^0.7.0",
+    "passport-oauth2": "^1.8.0",
+    "express-session": "^1.18.0",
+    "cookie-parser": "^1.4.6"
+  },
+  "devDependencies": {
+    "vitest": "^2.0.0",
+    "@vitest/ui": "^2.0.0",
+    "@vitest/coverage-v8": "^2.0.0",
+    "supertest": "^7.0.0"
   },
   "engines": {
     "node": ">=18.0.0"

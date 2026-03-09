@@ -66,6 +66,22 @@ CONFIG FILE:
     tunnel: {
       domain: string,      // Custom domain for Cloudflare tunnel
       tunnelId: string     // Cloudflare tunnel ID
+    },
+    auth: {
+      provider: {
+        authorizationURL: string,  // OAuth authorization URL
+        tokenURL: string,          // OAuth token URL
+        clientID: string,          // OAuth client ID
+        clientSecret: string,      // OAuth client secret
+        callbackURL: string,       // OAuth callback URL
+        scope: string              // OAuth scope (optional)
+      },
+      session: {
+        secret: string,            // Session secret
+        maxAge: number             // Session max age in ms
+      },
+      allowedUsers: string[],      // Allowed user emails
+      allowedDomains: string[]     // Allowed email domains
     }
   }
 

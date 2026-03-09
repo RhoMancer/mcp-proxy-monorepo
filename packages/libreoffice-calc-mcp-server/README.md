@@ -15,6 +15,55 @@ An [MCP (Model Context Protocol)](https://modelcontextprotocol.io) server that p
 - **macOS/Linux**: LibreOffice installed with Python bindings
 - LibreOffice running in socket listening mode
 
+## Quick Start
+
+### Step 1: Start LibreOffice in Socket Mode (Required!)
+
+**IMPORTANT:** You must start LibreOffice manually in socket mode before using this MCP server.
+
+#### Windows
+
+**Option A: Using the helper script (Recommended)**
+```batch
+cd packages\libreoffice-calc-mcp
+start-libreoffice.bat
+```
+
+**Option B: Manual command**
+```batch
+"C:\Program Files\LibreOffice\program\soffice.exe" --accept="socket,host=localhost,port=2002;urp;StarOffice.ServiceManager" --headless --nodefault --nolockcheck
+```
+
+**How to verify:**
+- Open Task Manager (Ctrl+Shift+Esc)
+- Look for `soffice.exe` in the Processes list
+
+#### macOS/Linux
+
+```bash
+soffice --accept="socket,host=localhost,port=2002;urp;StarOffice.ServiceManager" --headless --nodefault --nolockcheck
+```
+
+### Step 2: Start the HTTP Proxy
+
+```bash
+cd packages/libreoffice-calc-mcp
+npm start
+```
+
+The proxy will be available at `http://127.0.0.1:8081`
+
+### Step 3: Test
+
+```bash
+# Check health
+curl http://127.0.0.1:8081/health
+
+# Run tests (requires proxy running)
+node test.js          # Direct MCP test
+node test-proxy.js    # HTTP proxy test
+```
+
 ## Windows Setup (Important!)
 
 On Windows, you **must** use LibreOffice's bundled Python (includes pre-compiled pyuno):
@@ -29,37 +78,6 @@ curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
 ```
 
 The HTTP proxy is configured to use LibreOffice's Python automatically.
-
-## Quick Start
-
-### 1. Start LibreOffice with socket listening
-
-**Windows:**
-```bash
-"C:\Program Files\LibreOffice\program\soffice.exe" --accept="socket,host=localhost,port=2002;urp;StarOffice.ServiceManager"
-```
-
-**macOS/Linux:**
-```bash
-soffice --accept="socket,host=localhost,port=2002;urp;StarOffice.ServiceManager"
-```
-
-### 2. Start the HTTP Proxy
-
-```bash
-cd packages/libreoffice-calc-mcp
-npm start
-```
-
-The proxy will be available at `http://127.0.0.1:8081`
-
-### 3. Test
-
-```bash
-# Run tests (requires proxy running)
-node test.js          # Direct MCP test
-node test-proxy.js    # HTTP proxy test
-```
 
 ## Available Tools
 
@@ -106,6 +124,27 @@ PORT=8081                    # HTTP proxy port
   }
 }
 ```
+
+## Troubleshooting
+
+### "LibreOffice not detected"
+**Cause:** LibreOffice isn't running in socket mode.
+
+**Solution:**
+1. Check Task Manager for `soffice.exe`
+2. Start LibreOffice in socket mode:
+   ```batch
+   start-libreoffice.bat
+   ```
+3. Wait 5 seconds and restart the proxy
+
+### Connection refused
+**Cause:** LibreOffice isn't listening on the socket.
+
+**Solution:**
+1. Make sure LibreOffice was started with `--accept="socket,host=localhost,port=2002;urp;StarOffice.ServiceManager"`
+2. Check no other LibreOffice instances are running
+3. Restart both LibreOffice and the proxy
 
 ## License
 

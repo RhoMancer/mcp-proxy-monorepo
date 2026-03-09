@@ -15,7 +15,12 @@
     "start:libreoffice": "npm start -w packages/libreoffice-calc-mcp",
     "start:libreoffice:proxy-only": "npm run start:proxy-only -w packages/libreoffice-calc-mcp",
     "install:all": "npm install",
-    "clean": "npm run clean -ws --if-present"
+    "clean": "npm run clean -ws --if-present",
+    "setup:oauth": "node .validation/setup-oauth.js",
+    "test": "node .validation/run-tests.js all",
+    "test:oauth": "node .validation/run-tests.js oauth",
+    "test:libreoffice": "node .validation/run-tests.js libreoffice",
+    "test:integration": "node .validation/run-tests.js all"
   },
   "keywords": [
     "mcp",

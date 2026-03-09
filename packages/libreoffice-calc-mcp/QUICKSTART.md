@@ -1,26 +1,75 @@
 # LibreOffice Calc MCP - Quick Start Guide
 
-> **Get Claude working with your spreadsheets in 2 minutes.**
+> **Get Claude working with your spreadsheets in 3 easy steps.**
 >
 > **Note:** This works with **spreadsheets only** (Calc/Excel/CSV). Not for Word docs or PowerPoint files.
 
 ---
 
-## Step 1: Double-click to start
+## Step 0: Prerequisites
 
-Go to: `packages\libreoffice-calc-mcp\`
-
-Double-click: **`start.bat`**
-
-You should see:
-```
-✓ LibreOffice started
-✓ Proxy running on http://127.0.0.1:8081
-```
+Make sure you have:
+- [ ] LibreOffice installed (download free from https://www.libreoffice.org/download/)
+- [ ] Node.js installed (for running the proxy)
+- [ ] A test spreadsheet file (`.ods`, `.xlsx`, or `.csv`)
 
 ---
 
-## Step 2: Add to Claude
+## Step 1: Start LibreOffice (Required!)
+
+**IMPORTANT:** You must start LibreOffice in "socket mode" before using the MCP proxy.
+
+### Option A: Use the helper script (Easiest!)
+
+1. Open File Explorer
+2. Go to: `packages\libreoffice-calc-mcp\`
+3. **Double-click: `start-libreoffice.bat`**
+
+You'll see a window flash open - that's LibreOffice starting in the background.
+
+**How to check it worked:**
+- Open Task Manager (Ctrl+Shift+Esc)
+- Look for `soffice.exe` in the Processes list
+- If you see it, LibreOffice is running in socket mode!
+
+### Option B: Manual start (If script doesn't work)
+
+1. Open Command Prompt (cmd)
+2. Paste this command and press Enter:
+
+```batch
+"C:\Program Files\LibreOffice\program\soffice.exe" --accept="socket,host=localhost,port=2002;urp;StarOffice.ServiceManager" --headless --nodefault --nolockcheck
+```
+
+3. Leave this window open (LibreOffice is now running)
+
+**Pro tip:** If LibreOffice is installed elsewhere, change the path to where your `soffice.exe` is located.
+
+---
+
+## Step 2: Start the MCP Proxy
+
+1. Go to: `packages\libreoffice-calc-mcp\`
+2. **Double-click: `start.bat`**
+
+You should see:
+```
+================================
+  LibreOffice Calc MCP Proxy
+  Local:  http://127.0.0.1:8081
+================================
+
+✓ LibreOffice detected (localhost:2002)
+MCP HTTP Proxy listening on http://127.0.0.1:8081
+```
+
+**If you see "LibreOffice not detected":**
+- Go back to Step 1 and make sure LibreOffice is running
+- Wait 10 seconds and try `start.bat` again
+
+---
+
+## Step 3: Add to Claude
 
 Open Claude → **Settings** → **Connectors** → **Add Connector**
 
@@ -33,7 +82,7 @@ Click **Add**.
 
 ---
 
-## Step 3: Try it!
+## Step 4: Try it!
 
 Open a new Claude chat and try:
 
@@ -45,7 +94,7 @@ Or:
 
 ---
 
-## What can it do?
+## Quick Reference: What Can It Do?
 
 | Task | Example prompt |
 |------|----------------|
@@ -80,55 +129,74 @@ The spreadsheet file must already be on your computer.
 
 ## Troubleshooting
 
-**It won't start:**
-- Make sure LibreOffice is installed
-- Close all LibreOffice windows first
+### "LibreOffice Calc connector isn't currently running"
+**Cause:** The proxy wasn't started or LibreOffice isn't running.
 
-**"LibreOffice Calc connector isn't currently running":**
-- This means the proxy wasn't started with `start.bat` or `npm start`
-- The `start.bat` script **automatically starts LibreOffice** for you
-- Double-click `start.bat` again and wait for "✓ LibreOffice started" message
+**Solution:**
+1. Double-click `start-libreoffice.bat` (Step 1)
+2. Wait 5 seconds
+3. Double-click `start.bat` (Step 2)
+4. Wait for "LibreOffice detected" message
 
-**Claude says "can't connect":**
-- Did you double-click `start.bat`?
-- Wait 10 seconds after starting before asking Claude
-- Check http://127.0.0.1:8081/health in your browser
+### Claude says "can't connect"
+**Cause:** Proxy isn't running or URL is wrong.
 
-**"File not found":**
-- Use the FULL path: `C:/Users/...`
-- Make sure the file actually exists
+**Solution:**
+1. Did you complete Steps 1 and 2?
+2. Check the URL matches: `http://127.0.0.1:8081/messages`
+3. Test in browser: http://127.0.0.1:8081/health
+4. Should see: `{"status":"ok","mcpRunning":true,"mcpInitialized":true}`
 
-**Check if it's working:**
-Open this in your browser:
+### "LibreOffice not detected" in proxy
+**Cause:** LibreOffice isn't running in socket mode.
+
+**Solution:**
+1. Check Task Manager for `soffice.exe`
+2. If not there, run `start-libreoffice.bat` again
+3. If already there, end the task and restart it
+
+### "File not found"
+**Cause:** Wrong file path or file doesn't exist.
+
+**Solution:**
+1. Use the FULL path: `C:/Users/...`
+2. Make sure the file exists
+3. Copy the path from File Explorer address bar
+
+### Port already in use
+**Cause:** Another proxy is running on port 8081.
+
+**Solution:**
+```batch
+# Find what's using port 8081
+netstat -ano | findstr :8081
+
+# Kill the process (replace <PID> with the number)
+taskkill /PID <PID> /F
 ```
-http://127.0.0.1:8081/health
-```
-You should see: `{"status":"ok","mcpRunning":true}`
 
 ---
 
-## How to stop
+## One-Script Start (Optional)
 
-Press `Ctrl+C` in the command window, or just close it.
+If you want to start everything with one double-click:
 
----
-
-## Optional: Remote Access (Cloudflare Tunnel)
-
-To access your spreadsheets from anywhere (phone, other computers):
-
-1. Create a Cloudflare tunnel at https://dash.cloudflare.com/
-2. Copy `config.example.yml` to `config.yml`
-3. Edit `config.yml` with your tunnel details
-4. Double-click `start.bat` (includes the tunnel)
-
-Then use the HTTPS URL in Claude Connectors instead of the local URL.
+Use `start-full.bat` instead - it starts LibreOffice first, waits, then starts the proxy.
 
 ---
 
-## Need more help?
+## How to Stop
 
-See the full [README.md](README.md) for detailed documentation.
+**Stop the proxy:** Press `Ctrl+C` in the command window
+
+**Stop LibreOffice:** Use Task Manager to end `soffice.exe`, or run `stop.bat`
+
+---
+
+## Need More Help?
+
+- Check the health page: http://127.0.0.1:8081/health
+- See the full [README.md](README.md) for detailed documentation
 
 ---
 

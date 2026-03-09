@@ -139,24 +139,47 @@ MCP_LIBREOFFICE_PATH="C:/path/to/soffice.exe" npm start
 
 ### Starting the Proxy
 
-#### Option A: Quick Start (Recommended)
-Double-click this file:
-```
-packages\libreoffice-calc-mcp\start.bat
+**IMPORTANT:** You must start LibreOffice in socket mode BEFORE starting the proxy.
+
+#### Step 1: Start LibreOffice in Socket Mode (Required!)
+
+**Option A: Use the helper script (Easiest)**
+```batch
+# From the libreoffice-calc-mcp directory
+start-libreoffice.bat
 ```
 
-This does EVERYTHING automatically:
-1. Starts LibreOffice in the background (if not running)
-2. Starts the proxy server on port 8081
+**Option B: Manual start**
+```batch
+"C:\Program Files\LibreOffice\program\soffice.exe" --accept="socket,host=localhost,port=2002;urp;StarOffice.ServiceManager" --headless --nodefault --nolockcheck
+```
 
-#### Option B: From Command Line
+**How to verify LibreOffice is running:**
+- Open Task Manager (Ctrl+Shift+Esc)
+- Look for `soffice.exe` in the Processes list
+
+#### Step 2: Start the MCP Proxy
+
+**Option A: Quick Start (Recommended)**
+```batch
+# From the libreoffice-calc-mcp directory
+start.bat
+```
+
+**Option B: From Command Line**
 ```bash
 # From the monorepo root
 cd packages\libreoffice-calc-mcp
 npm start
 ```
 
-#### Option C: With Cloudflare Tunnel (Optional - for remote access)
+**Option C: One-Script Start (Optional)**
+```batch
+# Starts LibreOffice, waits, then starts the proxy
+start-full.bat
+```
+
+#### Option D: With Cloudflare Tunnel (Optional - for remote access)
 First, set up the tunnel configuration:
 ```bash
 # Copy the example config
@@ -177,7 +200,7 @@ You should see output like this:
 LibreOffice MCP Proxy Launcher
 ================================
 
-✓ LibreOffice is already running in socket mode (localhost:2002)
+✓ LibreOffice detected (localhost:2002)
 
 MCP HTTP Proxy listening on http://127.0.0.1:8081
 ```
@@ -306,6 +329,21 @@ The tool **cannot create new files**. The spreadsheet must already exist on your
 ---
 
 ## Part 9: Troubleshooting
+
+### Problem: "LibreOffice not detected"
+**Cause:** LibreOffice isn't running in socket mode.
+
+**Solution:**
+1. Check Task Manager for `soffice.exe`
+2. If not running, start it with:
+   ```batch
+   start-libreoffice.bat
+   ```
+   Or manually:
+   ```batch
+   "C:\Program Files\LibreOffice\program\soffice.exe" --accept="socket,host=localhost,port=2002;urp;StarOffice.ServiceManager" --headless --nodefault --nolockcheck
+   ```
+3. Wait 5 seconds and restart the proxy with `start.bat`
 
 ### Problem: "LibreOffice not found"
 **Solution:**
