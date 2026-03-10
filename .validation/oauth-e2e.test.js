@@ -179,16 +179,18 @@ async function runTests() {
 
   // Test 4: SSE endpoint is protected
   await test('SSE endpoint returns 401 without auth (when OAuth enabled)', async () => {
-    // Use short timeout for SSE - it will keep connection open if not authenticated
-    const response = await request('GET', '/sse', {}, 2000);
+    // Check auth status BEFORE making SSE request - it streams indefinitely when not protected
     const healthData = JSON.parse((await request('GET', '/health')).body);
 
-    if (healthData.authEnabled) {
-      if (response.statusCode !== 401) {
-        throw new Error(`Expected 401 without auth, got ${response.statusCode}`);
-      }
-    } else {
+    if (!healthData.authEnabled) {
       skip('SSE endpoint protection check', 'OAuth not enabled');
+      return;
+    }
+
+    // Use short timeout for SSE - it will keep connection open if not authenticated
+    const response = await request('GET', '/sse', {}, 2000);
+    if (response.statusCode !== 401) {
+      throw new Error(`Expected 401 without auth, got ${response.statusCode}`);
     }
   });
 
