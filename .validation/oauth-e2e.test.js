@@ -136,57 +136,48 @@ async function runTests() {
     process.exit(0);  // Exit 0 to not fail the test suite
   }
 
-  // Test 1: Health endpoint
-  await test('Health endpoint returns 200', async () => {
+  // Get auth status once - cache for all tests
+  let healthData;
+  await test('Health endpoint returns 200 and reports auth status', async () => {
     const response = await request('GET', '/health');
     if (response.statusCode !== 200) {
       throw new Error(`Expected 200, got ${response.statusCode}`);
     }
-  });
-
-  // Test 2: Check auth status from health endpoint
-  await test('Health endpoint reports auth status', async () => {
-    const response = await request('GET', '/health');
-    let data;
     try {
-      data = JSON.parse(response.body);
+      healthData = JSON.parse(response.body);
     } catch {
       throw new Error('Health endpoint did not return JSON');
     }
-    if (typeof data.authEnabled !== 'boolean') {
+    if (typeof healthData.authEnabled !== 'boolean') {
       throw new Error(`authEnabled not found or not boolean in health response`);
-    }
-    if (data.authEnabled) {
-      log.info('OAuth is enabled on this proxy');
-    } else {
-      log.warn('OAuth is NOT enabled on this proxy - some tests will be skipped');
     }
   });
 
+  const authEnabled = healthData.authEnabled;
+  if (authEnabled) {
+    log.info('OAuth is enabled on this proxy');
+  } else {
+    log.warn('OAuth is NOT enabled on this proxy - some tests will be skipped');
+  }
+
   // Test 3: Tools endpoint is protected
   await test('Tools endpoint returns 401 without auth (when OAuth enabled)', async () => {
-    const response = await request('GET', '/tools');
-    const healthData = JSON.parse((await request('GET', '/health')).body);
-
-    if (healthData.authEnabled) {
-      if (response.statusCode !== 401) {
-        throw new Error(`Expected 401 without auth, got ${response.statusCode}`);
-      }
-    } else {
+    if (!authEnabled) {
       skip('Tools endpoint protection check', 'OAuth not enabled');
+      return;
+    }
+    const response = await request('GET', '/tools');
+    if (response.statusCode !== 401) {
+      throw new Error(`Expected 401 without auth, got ${response.statusCode}`);
     }
   });
 
   // Test 4: SSE endpoint is protected
   await test('SSE endpoint returns 401 without auth (when OAuth enabled)', async () => {
-    // Check auth status BEFORE making SSE request - it streams indefinitely when not protected
-    const healthData = JSON.parse((await request('GET', '/health')).body);
-
-    if (!healthData.authEnabled) {
+    if (!authEnabled) {
       skip('SSE endpoint protection check', 'OAuth not enabled');
       return;
     }
-
     // Use short timeout for SSE - it will keep connection open if not authenticated
     const response = await request('GET', '/sse', {}, 2000);
     if (response.statusCode !== 401) {
@@ -196,53 +187,47 @@ async function runTests() {
 
   // Test 5: Message endpoint is protected
   await test('Message endpoint returns 401 without auth (when OAuth enabled)', async () => {
+    if (!authEnabled) {
+      skip('Message endpoint protection check', 'OAuth not enabled');
+      return;
+    }
     const response = await request('POST', '/message', {
       'Content-Type': 'application/json',
     });
-    const healthData = JSON.parse((await request('GET', '/health')).body);
-
-    if (healthData.authEnabled) {
-      if (response.statusCode !== 401) {
-        throw new Error(`Expected 401 without auth, got ${response.statusCode}`);
-      }
-    } else {
-      skip('Message endpoint protection check', 'OAuth not enabled');
+    if (response.statusCode !== 401) {
+      throw new Error(`Expected 401 without auth, got ${response.statusCode}`);
     }
   });
 
   // Test 6: Auth login endpoint exists
   await test('Auth login endpoint exists (when OAuth enabled)', async () => {
-    const response = await request('GET', '/auth/login');
-    const healthData = JSON.parse((await request('GET', '/health')).body);
-
-    if (healthData.authEnabled) {
-      if (response.statusCode === 404) {
-        throw new Error('Auth login endpoint not found (404)');
-      }
-      // Should either redirect (302/301) or return HTML
-      if (response.statusCode !== 302 && response.statusCode !== 301 && response.statusCode !== 200) {
-        throw new Error(`Unexpected status code: ${response.statusCode}`);
-      }
-    } else {
+    if (!authEnabled) {
       skip('Auth login endpoint check', 'OAuth not enabled');
+      return;
+    }
+    const response = await request('GET', '/auth/login');
+    if (response.statusCode === 404) {
+      throw new Error('Auth login endpoint not found (404)');
+    }
+    // Should either redirect (302/301) or return HTML
+    if (response.statusCode !== 302 && response.statusCode !== 301 && response.statusCode !== 200) {
+      throw new Error(`Unexpected status code: ${response.statusCode}`);
     }
   });
 
   // Test 7: Auth me endpoint returns 401 without session
   await test('Auth me endpoint returns 401 without session (when OAuth enabled)', async () => {
-    const response = await request('GET', '/auth/me');
-    const healthData = JSON.parse((await request('GET', '/health')).body);
-
-    if (healthData.authEnabled) {
-      if (response.statusCode !== 401) {
-        throw new Error(`Expected 401 without session, got ${response.statusCode}`);
-      }
-    } else {
+    if (!authEnabled) {
       skip('Auth me endpoint check', 'OAuth not enabled');
+      return;
+    }
+    const response = await request('GET', '/auth/me');
+    if (response.statusCode !== 401) {
+      throw new Error(`Expected 401 without session, got ${response.statusCode}`);
     }
   });
 
-  // Test 8: MCP endpoint is available
+  // Test 8: MCP endpoint is available (always test this one)
   await test('MCP endpoint is accessible', async () => {
     const response = await request('GET', '/mcp');
     if (response.statusCode === 404) {
