@@ -60,6 +60,7 @@ npm run start:libreoffice   # LibreOffice Calc
 ```
 mcp-proxy-monorepo/
 ├── .env.example                   # Environment variables template
+├── .validation/                   # Integration tests for example implementations
 ├── packages/
 │   ├── mcp-http-proxy/            # Generic proxy package
 │   ├── libreoffice-calc-mcp/      # LibreOffice Calc integration
@@ -71,6 +72,8 @@ mcp-proxy-monorepo/
 ├── package.json                   # Monorepo root
 └── README.md
 ```
+
+**Note:** The `.validation/` directory contains integration tests for **example implementations** (OAuth, LibreOffice), not tests for the generic proxy itself.
 
 ## Configuration
 

@@ -1,8 +1,22 @@
 # MCP Proxy Validation Tests
 
-This directory contains validation tests and testing resources for the MCP Proxy monorepo.
+This directory contains **integration tests for example implementations** in the MCP Proxy monorepo.
 
-## Quick Start
+## Purpose
+
+The **`mcp-http-proxy` package is a generic proxy framework** that can work with any stdio-based MCP server.
+
+These tests validate **specific example implementations** that demonstrate the proxy's capabilities:
+- **OAuth 2.0 Provider Mode** — Example: Hevy MCP with GitHub OAuth
+- **LibreOffice Calc Integration** — Example: Full automation setup with UNO
+
+These are **not** tests for the generic proxy itself — they validate complete end-to-end implementations using the proxy.
+
+---
+
+> **Note:** This directory contains integration tests for **example implementations** (OAuth, LibreOffice), not tests for the generic `mcp-http-proxy` package itself. The generic proxy is framework-agnostic and can be used with any MCP server.
+
+---
 
 ```bash
 # Run all validation tests
