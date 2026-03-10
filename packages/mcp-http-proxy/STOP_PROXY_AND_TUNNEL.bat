@@ -1,16 +1,16 @@
 @echo off
 REM ========================================================================
-REM MCP HTTP Proxy - Stop Script
+REM MCP HTTP Proxy - Stop Script (Proxy + Cloudflare Tunnel)
 REM ========================================================================
 REM
 REM This stops both the MCP Proxy and Cloudflare Tunnel processes.
-REM Use this when you're done using Claude Connectors.
+REM Use this when you're done using MCP Connectors.
 REM
 REM ========================================================================
 
 echo.
 echo ========================================================================
-echo  Stopping Hevy MCP Connector...
+echo  Stopping MCP Services...
 echo ========================================================================
 echo.
 

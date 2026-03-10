@@ -9,4 +9,4 @@ REM
 REM ========================================================================
 
 cd packages\mcp-http-proxy
-call stop.bat
+call STOP_PROXY_AND_TUNNEL.bat

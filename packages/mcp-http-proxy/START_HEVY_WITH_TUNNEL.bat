@@ -1,10 +1,10 @@
 @echo off
 REM ========================================================================
-REM MCP HTTP Proxy - Start with Cloudflare Tunnel
+REM MCP HTTP Proxy - Hevy Connector (Proxy + Cloudflare Tunnel)
 REM ========================================================================
 REM
 REM This is the DAILY QUICKSTART command for Hevy MCP connector.
-REM It starts both the MCP Proxy AND the Cloudflare Tunnel.
+REM It starts both the MCP Proxy AND the Cloudflare Tunnel for HTTPS access.
 REM
 REM DAILY WORKFLOW:
 REM   1. Run this file

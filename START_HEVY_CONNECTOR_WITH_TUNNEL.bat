@@ -1,10 +1,13 @@
 @echo off
 REM ========================================================================
-REM Hevy MCP Connector - Quick Start
+REM Hevy MCP Connector - Quick Start (with Cloudflare Tunnel)
 REM ========================================================================
 REM
 REM This is the EASIEST way to start the Hevy connector for Claude.
 REM Just double-click this file from anywhere in the repo!
+REM
+REM This starts BOTH the MCP Proxy AND the Cloudflare Tunnel for HTTPS
+REM access from Claude AI.
 REM
 REM DAILY WORKFLOW:
 REM   1. Double-click this file
@@ -19,7 +22,7 @@ REM ========================================================================
 
 echo.
 echo ========================================================================
-echo  Hevy MCP Connector - Starting...
+echo  Hevy MCP Connector - Starting with Cloudflare Tunnel
 echo ========================================================================
 echo.
 echo Changing to: packages\mcp-http-proxy
@@ -27,9 +30,9 @@ echo.
 
 cd packages\mcp-http-proxy
 
-echo Launching start-tunnel.bat...
+echo Launching START_HEVY_WITH_TUNNEL.bat...
 echo.
 echo ========================================================================
 echo.
 
-call start-tunnel.bat
+call START_HEVY_WITH_TUNNEL.bat
