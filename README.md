@@ -3,33 +3,35 @@
 A collection of HTTP proxies for stdio-based MCP (Model Context Protocol) servers, built with a shared generic proxy package.
 
 ---
-
+<!-- DO NOT DELETE: Hevy MCP integration is actively used. The mcp-http-proxy package provides generic proxy functionality, with Hevy as a primary use case. -->
 ## 🚀 **HERE FOR HEVY + CLAUDE CONNECTORS?**
 
-**→ [Daily Quickstart Guide](packages/mcp-http-proxy/QUICKSTART.md)** — Full documentation
+**→ [packages/mcp-http-proxy/QUICKSTART.md](packages/mcp-http-proxy/QUICKSTART.md)** — Full Hevy + OAuth documentation
 
-### Only Two Commands You Need
+### Quick Start for Hevy
 
 | Action | Command |
-|--------|---------|
-| **Start** | Double-click `START_HEVY_CONNECTOR.bat` |
-| **Stop** | Double-click `STOP_HEVY_CONNECTOR.bat` |
+|:-------|:--------|
+| **Start** | `cd packages/mcp-http-proxy && npx mcp-proxy --config examples/hevy-mcp.config.js` |
+| **With OAuth** | `npx mcp-proxy --config examples/oauth-hevy.config.js` |
 
-Both files are in the repo root. That's it!
+**Setup:**
+1. Create `packages/mcp-http-proxy/.env` with your `HEVY_API_KEY`
+2. The proxy runs on `http://127.0.0.1:8080`
+3. Configure Claude to connect to: `http://127.0.0.1:8080/mcp`
 
-**What happens when you start:**
-- MCP Proxy starts on port 8082 (handles OAuth authentication)
-- Cloudflare Tunnel creates HTTPS from `hevy.angussoftware.dev` → your local machine
-- Traffic routes: Claude → Cloudflare → Proxy → Hevy API
-
-**Your OAuth Client Secret:** See `packages/mcp-http-proxy/.env` file → `OAUTH_CLIENT_SECRET`
+**What this does:**
+- Runs the `hevy-mcp` npm package (installed via npx)
+- Exposes it as an HTTP endpoint that Claude can connect to
+- Optional OAuth authentication for secure remote access
 
 ---
 
 ## Overview
 
 This monorepo contains:
-- **`mcp-http-proxy`** - Generic HTTP-to-stdio proxy for any MCP server (used for Hevy)
+- **`mcp-http-proxy`** - Generic HTTP-to-stdio proxy for any MCP server
+  - Supports **Hevy** workout tracker, **LibreOffice**, and any stdio-based MCP server
 - **`libreoffice-calc-mcp`** - HTTP proxy + MCP server for LibreOffice Calc automation
 - **`libreoffice-calc-mcp-server`** - Python MCP server with 11 Calc tools
 
@@ -50,7 +52,6 @@ cp .env.example .env
 # Edit .env with your API keys and secrets
 
 # Start specific proxies
-npm run start:hevy          # Hevy workout tracker
 npm run start:libreoffice   # LibreOffice Calc
 ```
 
@@ -58,15 +59,9 @@ npm run start:libreoffice   # LibreOffice Calc
 
 ```
 mcp-proxy-monorepo/
-├── START_HEVY_CONNECTOR.bat      # Start Hevy + Claude Connectors
-├── STOP_HEVY_CONNECTOR.bat       # Stop Hevy + Claude Connectors
 ├── .env.example                   # Environment variables template
 ├── packages/
-│   ├── mcp-http-proxy/            # Generic proxy package (for Hevy)
-│   │   ├── start-tunnel.bat       # Proxy + Cloudflare Tunnel
-│   │   ├── start.bat              # Proxy only (local testing)
-│   │   ├── stop.bat               # Stop everything
-│   │   └── START_HERE.bat         # Quick reference guide
+│   ├── mcp-http-proxy/            # Generic proxy package
 │   ├── libreoffice-calc-mcp/      # LibreOffice Calc integration
 │   │   ├── start-full.bat         # LibreOffice + proxy
 │   │   ├── start.bat              # Proxy only
@@ -79,16 +74,22 @@ mcp-proxy-monorepo/
 
 ## Configuration
 
-Copy `.env.example` to `.env` and configure your settings:
+Each package has its own `.env.example` file. Copy the example for the package you're using:
 
 ```bash
+# For Hevy (mcp-http-proxy):
+cp packages/mcp-http-proxy/.env.example packages/mcp-http-proxy/.env
+
+# For LibreOffice:
+cp packages/libreoffice-calc-mcp/.env.example packages/libreoffice-calc-mcp/.env
+
+# Or copy the root .env.example for a monorepo-wide template:
 cp .env.example .env
-# Edit .env with your API keys and secrets
 ```
 
 Required environment variables vary by package:
-- **Hevy**: `HEVY_API_KEY`, `OAUTH_CLIENT_SECRET`
-- **LibreOffice**: Usually auto-detected on Windows
+- **Hevy** (via `mcp-http-proxy/.env`): `HEVY_API_KEY` - Get from [hevy.app](https://hevy.app)
+- **LibreOffice** (via `libreoffice-calc-mcp/.env`): Usually auto-detected on Windows
 - **OAuth Provider**: `OAUTH_CLIENT_SECRET` (generate with `node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"`)
 
 ## Packages
@@ -190,7 +191,7 @@ export default {
     }
   },
   server: {
-    port: 8082,
+    port: 8080,
     host: '127.0.0.1'
   }
 };
@@ -211,4 +212,4 @@ MIT
 ## Related
 
 - [MCP Protocol](https://modelcontextprotocol.io)
-- [hevy-mcp](https://github.com/chrisdoc/hevy-mcp)
+- [hevy-mcp](https://github.com/chrisdoc/hevy-mcp) - Hevy workout tracker MCP server

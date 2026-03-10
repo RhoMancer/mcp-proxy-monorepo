@@ -39,8 +39,8 @@ dev = [
 libreoffice-calc-mcp = "libreoffice_calc_mcp:main"
 
 [project.urls]
-Homepage = "https://github.com/yourusername/mcp-proxy-monorepo"
-Repository = "https://github.com/yourusername/mcp-proxy-monorepo"
+Homepage = "https://github.com/RhoMancer/mcp-proxy-monorepo"
+Repository = "https://github.com/RhoMancer/mcp-proxy-monorepo"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/libreoffice_calc_mcp"]

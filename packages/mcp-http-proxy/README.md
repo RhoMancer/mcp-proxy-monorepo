@@ -61,6 +61,124 @@ npx mcp-proxy
 npx mcp-proxy --config my-config.js
 ```
 
+## Authentication Modes
+
+The proxy supports **three mutually exclusive authentication modes**. The mode is automatically determined by which configuration section you include:
+
+### Decision Tree: Which Mode Should I Use?
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    Do you need authentication?                   │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                ┌─────────────┴─────────────┐
+                │                           │
+               NO                          YES
+                │                           │
+                │                           ▼
+                │              ┌─────────────────────────────────┐
+                │              │ Using Claude Connectors (Beta)? │
+                │              └─────────────────────────────────┘
+                │                           │
+                │              ┌─────────────┴─────────────┐
+                │              │                           │
+                │             YES                          NO
+                │              │                           │
+                │              ▼                           ▼
+                │    ┌──────────────────┐      ┌──────────────────┐
+                │    │ OAuth Provider   │      │ OAuth 2.0        │
+                │    │ Mode             │      │ Redirect Mode    │
+                │    │ (oauthProvider)  │      │ (auth)           │
+                │    └──────────────────┘      └──────────────────┘
+                │              │                           │
+                ▼              ▼                           ▼
+    ┌───────────────┐  Clients use           Users redirect to
+    │ No Auth Mode  │  client_id/secret      GitHub/Google/etc
+    │ (no config)   │  to get JWT token      to authenticate
+    └───────────────┘
+```
+
+### Mode 1: No Authentication (Default)
+
+**Use when:** Development, local testing, or running in a trusted network.
+
+**Config:** No `auth` or `oauthProvider` section needed.
+
+```js
+export default {
+  mcp: { /* ... */ },
+  server: { port: 8080 }
+  // No auth section = open access
+};
+```
+
+### Mode 2: OAuth 2.0 Redirect Mode (`auth`)
+
+**Use when:** You want users to authenticate via GitHub, Google, Auth0, etc.
+
+**How it works:** Users visit `/auth/login`, get redirected to OAuth provider, then back to your proxy with a session.
+
+**Config:**
+
+```js
+export default {
+  mcp: { /* ... */ },
+  server: { port: 8080 },
+  auth: {
+    provider: {
+      authorizationURL: 'https://github.com/login/oauth/authorize',
+      tokenURL: 'https://github.com/login/oauth/access_token',
+      clientID: process.env.GITHUB_CLIENT_ID,
+      clientSecret: process.env.GITHUB_CLIENT_SECRET,
+      callbackURL: 'http://127.0.0.1:8080/auth/callback',
+      scope: 'user:email'
+    },
+    session: {
+      secret: process.env.SESSION_SECRET
+    },
+    allowedUsers: ['user@example.com'],  // Optional
+    allowedDomains: ['example.com']      // Optional
+  }
+};
+```
+
+**Examples:** `examples/oauth-github.config.js`, `examples/oauth-google.config.js`, `examples/oauth-auth0.config.js`
+
+### Mode 3: OAuth Provider Mode (`oauthProvider`)
+
+**Use when:** Using Claude Connectors (Beta feature) which requires OAuth client credentials flow.
+
+**How it works:** Clients (like Claude) send `client_id` and `client_secret` to receive a JWT token for API access.
+
+**Config:**
+
+```js
+export default {
+  mcp: { /* ... */ },
+  server: { port: 8080 },
+  oauthProvider: {
+    // Simple mode: any client_id works with this shared secret
+    defaultSecret: process.env.OAUTH_CLIENT_SECRET,
+    tokenExpiration: 24 * 60 * 60 * 1000  // 24 hours
+
+    // OR multiple clients mode:
+    // allowedClients: [
+    //   { clientId: 'claude-connectors', clientSecret: 'secret123' },
+    //   { clientId: 'another-app', clientSecret: 'secret456' }
+    // ]
+  }
+};
+```
+
+**Examples:** `examples/claude-connectors-hevy.config.js`, `examples/claude-connectors-libreoffice.config.js`
+
+### Important: Modes Are Mutually Exclusive
+
+- Use **only one** of: `auth`, `oauthProvider`, or neither
+- Do **not** include both `auth` and `oauthProvider` in the same config
+- The proxy detects which mode to use based on which section exists
+
 ## Configuration
 
 ### Config File Structure

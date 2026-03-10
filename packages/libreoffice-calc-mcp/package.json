@@ -1,7 +1,7 @@
 {
-  "name": "libreoffice-calc-mcp-proxy",
+  "name": "libreoffice-calc-mcp",
   "version": "1.0.0",
-  "description": "HTTP proxy for libreoffice-calc-mcp using mcp-http-proxy",
+  "description": "HTTP proxy for libreoffice-calc-mcp-server using mcp-http-proxy",
   "type": "module",
   "scripts": {
     "start": "node start.js",
