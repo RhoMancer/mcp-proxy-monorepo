@@ -2,6 +2,22 @@
 
 A collection of HTTP proxies for stdio-based MCP (Model Context Protocol) servers, built with a shared generic proxy package.
 
+---
+
+## 🚀 **HERE FOR HEVY + CLAUDE CONNECTORS?**
+
+**→ [QUICKSTART.md](QUICKSTART.md)** — Daily setup guide
+
+**One command to run everything:**
+```bash
+cd packages/mcp-http-proxy
+.\start-tunnel.bat
+```
+
+**Your OAuth Client Secret:** See `.env` file → `OAUTH_CLIENT_SECRET`
+
+---
+
 ## Overview
 
 This monorepo contains:

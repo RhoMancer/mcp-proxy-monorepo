@@ -1,9 +1,29 @@
 @echo off
-REM Start MCP HTTP Proxy with Cloudflare Tunnel for Claude Connectors
-REM This starts both the proxy server and the cloudflared tunnel
+REM ========================================================================
+REM MCP HTTP Proxy - Start with Cloudflare Tunnel
+REM ========================================================================
+REM
+REM This is the DAILY QUICKSTART command for Hevy MCP connector.
+REM It starts both the MCP Proxy AND the Cloudflare Tunnel.
+REM
+REM DAILY WORKFLOW:
+REM   1. Run this file
+REM   2. Keep this window open
+REM   3. Connect in Claude: https://claude.ai
+REM
+REM Your OAuth Secret is in: .env file (see OAUTH_CLIENT_SECRET)
+REM Or see: QUICKSTART.md at repo root
+REM
+REM For full docs, see: QUICKSTART.md
+REM
+REM ========================================================================
 
-echo Starting MCP HTTP Proxy with OAuth Provider mode...
-echo Configuration: claude-connectors-hevy.config.js
+echo.
+echo ========================================================================
+echo  Hevy MCP Connector - Starting with Cloudflare Tunnel
+echo ========================================================================
+echo.
+echo [1/2] Starting MCP Proxy (port 8082)...
 echo.
 
 REM Start the MCP HTTP Proxy in background
@@ -12,8 +32,22 @@ start "MCP Proxy" cmd /c "node src/cli.js -c examples/claude-connectors-hevy.con
 REM Wait for proxy to start
 timeout /t 2 /nobreak > nul
 
-REM Start Cloudflare Tunnel
-echo Starting Cloudflare Tunnel...
-echo URL: https://hevy.angussoftware.dev
+echo [2/2] Starting Cloudflare Tunnel...
 echo.
-cloudflared tunnel run rho-hevy-mcp-proxy --url http://127.0.0.1:8082
+echo   Tunnel URL: https://hevy.angussoftware.dev
+echo   Config file: config.yml
+echo.
+echo ========================================================================
+echo  TUNNEL IS RUNNING - Keep this window open!
+echo ========================================================================
+echo.
+echo Connect in Claude: https://claude.ai
+echo   OAuth Client Secret: See .env file (OAUTH_CLIENT_SECRET)
+echo   Or check QUICKSTART.md at repo root
+echo.
+echo Press Ctrl+C to stop the tunnel
+echo.
+echo ========================================================================
+echo.
+
+cloudflared tunnel run --config config.yml

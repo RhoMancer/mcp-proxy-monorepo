@@ -1,14 +1,17 @@
 @echo off
 REM ========================================================================
-REM MCP HTTP Proxy - Start Script
+REM Hevy MCP Connector - Quick Start
 REM ========================================================================
 REM
-REM This starts the MCP Proxy with OAuth Provider mode for Hevy MCP.
+REM This is the EASIEST way to start the Hevy connector for Claude.
+REM Just double-click this file from anywhere in the repo!
 REM
-REM DAILY QUICKSTART:
-REM   1. Run this file (or start-tunnel.bat for HTTPS support)
-REM   2. Keep this window open
-REM   3. Add connector in Claude: https://claude.ai
+REM DAILY WORKFLOW:
+REM   1. Double-click this file
+REM   2. Keep the window open
+REM   3. Connect in Claude: https://claude.ai
+REM
+REM Your OAuth Secret: 1lR8TILqQVpnhKTX43AcNz8VuqLt3ChbDTlq4qtx9Ys=
 REM
 REM For full docs, see: QUICKSTART.md
 REM
@@ -16,19 +19,17 @@ REM ========================================================================
 
 echo.
 echo ========================================================================
-echo  MCP HTTP Proxy - Hevy Connector
+echo  Hevy MCP Connector - Starting...
 echo ========================================================================
 echo.
-echo Configuration: claude-connectors-hevy.config.js
-echo OAuth Secret: Loaded from .env file
+echo Changing to: packages\mcp-http-proxy
 echo.
-echo Starting proxy on http://127.0.0.1:8082
-echo.
-echo Press Ctrl+C to stop the proxy
+
+cd packages\mcp-http-proxy
+
+echo Launching start-tunnel.bat...
 echo.
 echo ========================================================================
 echo.
 
-node src/cli.js -c examples/claude-connectors-hevy.config.js
-
-pause
+call start-tunnel.bat

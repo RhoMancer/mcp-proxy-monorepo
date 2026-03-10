@@ -2,7 +2,18 @@
 
 A generic HTTP-to-stdio proxy for any [MCP (Model Context Protocol)](https://modelcontextprotocol.io) server. This allows stdio-based MCP servers to work with AI clients that require HTTP endpoints.
 
-## Features
+---
+
+## 🚀 **NEW HERE? START HERE** 🚀
+
+**→ [QUICKSTART.md](QUICKSTART.md)** — Daily setup guide for Hevy MCP connector
+
+**One command to run everything:**
+```bash
+.\start-tunnel.bat
+```
+
+---
 
 - 🔄 **Universal compatibility** - Works with any stdio-based MCP server
 - 🌐 **HTTP endpoints** - Exposes MCP servers via HTTP/HTTPS

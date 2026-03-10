@@ -1,12 +1,33 @@
 @echo off
-REM Stop MCP HTTP Proxy and Cloudflare Tunnel
+REM ========================================================================
+REM MCP HTTP Proxy - Stop Script
+REM ========================================================================
+REM
+REM This stops both the MCP Proxy and Cloudflare Tunnel processes.
+REM Use this when you're done using Claude Connectors.
+REM
+REM ========================================================================
 
-echo Stopping MCP Proxy and Cloudflare Tunnel...
+echo.
+echo ========================================================================
+echo  Stopping Hevy MCP Connector...
+echo ========================================================================
+echo.
 
-REM Kill node processes running the proxy
+echo [1/2] Stopping MCP Proxy...
 taskkill /F /IM node.exe /FI "WINDOWTITLE eq MCP Proxy*" 2>nul
+if %ERRORLEVEL% EQU 0 echo     - Proxy stopped
+if %ERRORLEVEL% NEQ 0 echo     - No proxy running
 
-REM Kill cloudflared processes
+echo.
+echo [2/2] Stopping Cloudflare Tunnel...
 taskkill /F /IM cloudflared.exe 2>nul
+if %ERRORLEVEL% EQU 0 echo     - Tunnel stopped
+if %ERRORLEVEL% NEQ 0 echo     - No tunnel running
 
-echo Done.
+echo.
+echo ========================================================================
+echo  All stopped! You can close this window.
+echo ========================================================================
+echo.
+timeout /t 2 /nobreak > nul

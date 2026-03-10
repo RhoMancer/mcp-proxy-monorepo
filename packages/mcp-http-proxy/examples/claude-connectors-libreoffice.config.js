@@ -11,7 +11,7 @@
  *    - Name: LibreOffice Calc (or your preferred name)
  *    - Remote MCP server URL: http://127.0.0.1:8081/message
  *    - OAuth Client ID: claude-libreoffice-client
- *    - OAuth Client Secret: libre-secret-key-change-me
+ *    - OAuth Client Secret: [Use value from .env file - DO NOT use the placeholder below]
  *
  * 3. Click "Add" to connect
  *
@@ -23,7 +23,9 @@
  * 3. Default connection: localhost:2002
  *
  * SECURITY NOTES:
- * - Change the default client_secret in production
+ * - NEVER use the placeholder value 'libre-secret-key-change-me' in production
+ * - Set OAUTH_CLIENT_SECRET in your .env file with a strong random value
+ * - Generate a secure secret: node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
  * - For multiple clients, use the allowedClients array format
  * - Use HTTPS in production for secure token transmission
  *

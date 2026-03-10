@@ -32,7 +32,18 @@ OAuth Provider mode enables your mcp-proxy to validate OAuth client credentials 
 
 ### Quick Setup
 
-1. **Create a configuration file** (`claude-connectors.config.js`):
+1. **Generate a secure OAuth client secret**:
+   ```bash
+   node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
+   ```
+
+2. **Add the secret to your `.env` file**:
+   ```bash
+   OAUTH_CLIENT_SECRET=<your-generated-secret-here>
+   ```
+   > **⚠️ SECURITY**: NEVER use placeholder values like `hevy-secret-key-change-me` or `libre-secret-key-change-me` in production. These are examples only.
+
+3. **Create a configuration file** (`claude-connectors.config.js`):
 
    ```js
    export default {
@@ -49,25 +60,26 @@ OAuth Provider mode enables your mcp-proxy to validate OAuth client credentials 
        host: '127.0.0.1'
      },
      oauthProvider: {
-       defaultSecret: process.env.OAUTH_CLIENT_SECRET || 'your-secret-key'
+       // Uses the secure secret from .env
+       defaultSecret: process.env.OAUTH_CLIENT_SECRET
      }
    };
    ```
 
-2. **Start the proxy**:
+4. **Start the proxy**:
    ```bash
    cd packages/mcp-http-proxy
    node src/cli.js -c ../examples/claude-connectors-your-server.config.js
    ```
 
-3. **Add to Claude Connectors**:
+5. **Add to Claude Connectors**:
    - Open Claude web app
    - Go to "Add custom connector" (Beta feature)
    - Fill in:
      - **Name**: Your choice (e.g., "Hevy Workout Tracker")
      - **Remote MCP server URL**: `http://127.0.0.1:8080/message`
      - **OAuth Client ID**: Any identifier (e.g., "claude-client")
-     - **OAuth Client Secret**: Must match your `defaultSecret` value
+     - **OAuth Client Secret**: Must match your `OAUTH_CLIENT_SECRET` value from `.env`
 
 ## Configuration Examples
 
@@ -88,19 +100,37 @@ export default {
     port: 8082,
     host: '127.0.0.1'
   },
+  tunnel: {
+    domain: 'hevy.angussoftware.dev',
+    tunnelId: 'e02235fc-0f81-42c7-b997-ec10be64c5ba'
+  },
   oauthProvider: {
     defaultSecret: process.env.OAUTH_CLIENT_SECRET || 'hevy-secret-key-change-me'
   }
 };
 ```
 
+**`.env` setup**:
+```bash
+HEVY_API_KEY=your_hevy_api_key
+OAUTH_CLIENT_SECRET=<generate with: node -e "console.log(require('crypto').randomBytes(32).toString('base64'))">
+```
+
+**Quick start with tunnel**:
+```bash
+cd packages/mcp-http-proxy
+.\start-tunnel.bat
+```
+
 **Claude Connectors settings**:
 | Field | Value |
 |-------|-------|
 | Name | Hevy Workout Tracker |
-| Remote MCP server URL | `http://127.0.0.1:8082/message` |
+| Remote MCP server URL | `https://hevy.angussoftware.dev/message` (HTTPS with tunnel) |
+| Authorization Endpoint | `https://hevy.angussoftware.dev/oauth/authorize` |
+| Token Endpoint | `https://hevy.angussoftware.dev/oauth/token` |
 | OAuth Client ID | `claude-hevy-client` (or any value) |
-| OAuth Client Secret | `hevy-secret-key-change-me` |
+| OAuth Client Secret | Use your `OAUTH_CLIENT_SECRET` from `.env` |
 
 ### LibreOffice Calc
 
@@ -126,13 +156,18 @@ export default {
 };
 ```
 
+**`.env` setup**:
+```bash
+OAUTH_CLIENT_SECRET=<generate with: node -e "console.log(require('crypto').randomBytes(32).toString('base64'))">
+```
+
 **Claude Connectors settings**:
 | Field | Value |
 |-------|-------|
 | Name | LibreOffice Calc |
 | Remote MCP server URL | `http://127.0.0.1:8081/message` |
 | OAuth Client ID | `claude-libreoffice-client` |
-| OAuth Client Secret | `libre-secret-key-change-me` |
+| OAuth Client Secret | Use your `OAUTH_CLIENT_SECRET` from `.env` |
 
 ### Multiple Clients
 
@@ -157,6 +192,32 @@ oauthProvider: {
 ```
 
 ## Testing Your Setup
+
+### Starting with Cloudflare Tunnel (Recommended for External Access)
+
+For HTTPS access (required for Claude Connectors from the web), use the provided batch scripts:
+
+```bash
+cd packages/mcp-http-proxy
+.\start-tunnel.bat
+```
+
+This script:
+1. Starts the MCP HTTP Proxy with your configuration
+2. Starts Cloudflare Tunnel using `config.yml`
+3. Routes traffic from your domain to `localhost:8082`
+
+The `config.yml` file contains:
+- Your tunnel ID
+- Credentials file location (gitignored)
+- Ingress routing rules
+
+> **Note**: The `config.yml` file is gitignored for security. Create your own by following the Cloudflare Tunnel setup guide in the main README.
+
+To stop the tunnel:
+```bash
+.\stop.bat
+```
 
 ### 1. Check Health Endpoint
 
@@ -266,11 +327,12 @@ Tokens expire after 24 hours by default. Claude Connectors should automatically 
 
 ## Security Best Practices
 
-1. **Use strong secrets** - Generate random secrets with `openssl rand -base64 32`
-2. **Use environment variables** - Never commit secrets to git
-3. **Use HTTPS in production** - Configure secure cookies when using HTTPS
-4. **Set appropriate token expiration** - Balance security and user experience
-5. **Rotate secrets periodically** - Change client secrets regularly
+1. **Use strong secrets** - Generate random secrets with `node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"`
+2. **NEVER use placeholder values** - Values like `hevy-secret-key-change-me` are for documentation only. Always use a generated secret in production.
+3. **Use environment variables** - Never commit secrets to git (`.env` is gitignored)
+4. **Use HTTPS in production** - Use Cloudflare Tunnel or similar for secure external access
+5. **Set appropriate token expiration** - Balance security and user experience
+6. **Rotate secrets periodically** - Change client secrets regularly
 
 ## Advanced Configuration
 
