@@ -62,7 +62,7 @@ Tests LibreOffice integration:
 - ✓ `soffice.exe` process detection
 - ✓ Socket connection test (port 2002)
 - ✓ Test spreadsheet availability
-- ✓ QUICKSTART.md documentation verification
+- ✓ README.md quick start verification
 
 **Prerequisites:**
 - LibreOffice installed (standard Windows locations)

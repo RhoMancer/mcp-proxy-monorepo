@@ -12,7 +12,6 @@ REM   2. Keep this window open
 REM   3. Connect in Claude: https://claude.ai
 REM
 REM Your OAuth Secret is in: .env file (see OAUTH_CLIENT_SECRET)
-REM Or see: QUICKSTART.md at repo root
 REM
 REM For full docs, see: QUICKSTART.md
 REM
@@ -43,7 +42,7 @@ echo ========================================================================
 echo.
 echo Connect in Claude: https://claude.ai
 echo   OAuth Client Secret: See .env file (OAUTH_CLIENT_SECRET)
-echo   Or check QUICKSTART.md at repo root
+echo   For full setup guide: QUICKSTART.md
 echo.
 echo Press Ctrl+C to stop the tunnel
 echo.

@@ -23,7 +23,7 @@ npm run test:libreoffice  # LibreOffice connection validation
 | LibreOffice installed | ✓ PASS | Found at C:\Program Files\LibreOffice\program\soffice.exe |
 | start-libreoffice.bat valid | ✓ PASS | Contains correct socket mode parameters |
 | Test spreadsheet exists | ✓ PASS | test.ods found in test-data/ |
-| QUICKSTART.md accurate | ✓ PASS | All key instructions present |
+| README.md has quickstart | ✓ PASS | Quick start instructions present |
 | soffice.exe running | ⚠ MANUAL | Requires LibreOffice to be started |
 | Port 2002 listening | ⚠ MANUAL | Requires LibreOffice socket mode |
 | Socket connection | ⚠ MANUAL | Requires LibreOffice to be running |

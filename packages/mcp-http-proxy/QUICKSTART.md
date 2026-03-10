@@ -7,11 +7,16 @@
 ## 🎯 The Only Command You Need
 
 ```bash
-cd H:\My_Repositories\mcp-proxy-monorepo\packages\mcp-http-proxy
 .\start-tunnel.bat
 ```
 
-**Keep this window open** while using Claude Connectors.
+**What this command does:**
+
+1. **Starts the MCP Proxy** (port 8082) — Handles OAuth authentication and communicates with the Hevy API
+2. **Starts the Cloudflare Tunnel** — Creates a secure HTTPS connection from `hevy.angussoftware.dev` to your local machine
+3. **Routes traffic** — Forwards requests from Claude → Cloudflare → Your local proxy → Hevy API
+
+> **Keep this window open** while using Claude Connectors.
 
 ---
 

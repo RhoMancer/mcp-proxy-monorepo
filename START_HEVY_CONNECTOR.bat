@@ -11,9 +11,9 @@ REM   1. Double-click this file
 REM   2. Keep the window open
 REM   3. Connect in Claude: https://claude.ai
 REM
-REM Your OAuth Secret: 1lR8TILqQVpnhKTX43AcNz8VuqLt3ChbDTlq4qtx9Ys=
+REM Your OAuth Secret: See .env file (OAUTH_CLIENT_SECRET)
 REM
-REM For full docs, see: QUICKSTART.md
+REM For full docs, see: packages\mcp-http-proxy\QUICKSTART.md
 REM
 REM ========================================================================
 

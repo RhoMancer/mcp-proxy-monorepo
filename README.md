@@ -6,15 +6,27 @@ A collection of HTTP proxies for stdio-based MCP (Model Context Protocol) server
 
 ## 🚀 **HERE FOR HEVY + CLAUDE CONNECTORS?**
 
-**→ [QUICKSTART.md](QUICKSTART.md)** — Daily setup guide
+**→ [Daily Quickstart Guide](packages/mcp-http-proxy/QUICKSTART.md)** — One-command setup
 
-**One command to run everything:**
+### Easiest Way (Windows)
+
+**Double-click from anywhere in the repo:**
+```
+START_HEVY_CONNECTOR.bat
+```
+
+### Or from Command Line
+
 ```bash
 cd packages/mcp-http-proxy
 .\start-tunnel.bat
 ```
 
-**Your OAuth Client Secret:** See `.env` file → `OAUTH_CLIENT_SECRET`
+**New to this?** Run `START_HERE.bat` in the `mcp-http-proxy` directory for an interactive menu.
+
+This starts the MCP Proxy, Cloudflare Tunnel, and routes traffic from Claude to Hevy.
+
+**Your OAuth Client Secret:** See `packages/mcp-http-proxy/.env` file → `OAUTH_CLIENT_SECRET`
 
 ---
 
@@ -28,32 +40,59 @@ This monorepo contains:
 
 ## Quick Start
 
+**Requirements:**
+- Node.js 18 or higher
+- For LibreOffice: LibreOffice installed (optional for other packages)
+
 ```bash
 # Clone and install
 git clone https://github.com/RhoMancer/mcp-proxy-monorepo.git
 cd mcp-proxy-monorepo
 npm install
 
-# Start any proxy
-npm start
+# Copy example environment files and configure
+cp .env.example .env
+# Edit .env with your API keys and secrets
 
 # Start specific proxies
-npm run start:hevy
-npm run start:libreoffice
+npm run start:hevy          # Hevy workout tracker
+npm run start:libreoffice   # LibreOffice Calc
 ```
 
 ## Project Structure
 
 ```
 mcp-proxy-monorepo/
+├── START_HEVY_CONNECTOR.bat      # Quick launcher for Hevy + Claude Connectors
+├── .env.example                   # Environment variables template
 ├── packages/
 │   ├── mcp-http-proxy/            # Generic proxy package
+│   │   ├── start-tunnel.bat       # Hevy + Cloudflare Tunnel launcher
+│   │   ├── start.bat              # Proxy-only launcher
+│   │   └── START_HERE.bat         # Interactive menu
 │   ├── hevy-mcp-proxy/            # Hevy-specific proxy
 │   ├── libreoffice-calc-mcp/       # LibreOffice Calc proxy wrapper
+│   │   ├── start-full.bat         # LibreOffice + proxy launcher
+│   │   ├── start.bat              # Proxy-only launcher
+│   │   └── start-libreoffice.bat  # LibreOffice-only launcher
 │   └── libreoffice-calc-mcp-server/ # Python MCP server (UNO/Calc)
 ├── package.json                # Monorepo root (npm workspaces)
 └── README.md
 ```
+
+## Configuration
+
+Copy `.env.example` to `.env` and configure your settings:
+
+```bash
+cp .env.example .env
+# Edit .env with your API keys and secrets
+```
+
+Required environment variables vary by package:
+- **Hevy**: `HEVY_API_KEY`, `OAUTH_CLIENT_SECRET`
+- **LibreOffice**: Usually auto-detected on Windows
+- **OAuth Provider**: `OAUTH_CLIENT_SECRET` (generate with `node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"`)
 
 ## Packages
 
@@ -103,26 +142,30 @@ Complete LibreOffice Calc integration with HTTP proxy and Python MCP server.
 - HTTP proxy at http://127.0.0.1:8081
 - Optional Cloudflare tunnel for remote access
 
-**Setup (Recommended — Auto-start):**
+**Quick Start (Windows — Easiest):**
+```batch
+REM From the libreoffice-calc-mcp directory:
+cd packages\libreoffice-calc-mcp
+
+REM Option 1: Start everything (LibreOffice + proxy)
+start-full.bat
+
+REM Option 2: Just the proxy (if LibreOffice already running)
+start.bat
+
+REM Option 3: Just LibreOffice (for manual setup)
+start-libreoffice.bat
+```
+
+**Or use npm:**
 ```bash
 cd packages/libreoffice-calc-mcp
 npm start          # Automatically starts LibreOffice + proxy
 ```
 
-**Quick Start (Windows):**
-Double-click `packages/libreoffice-calc-mcp/start.bat`
-
-**Advanced: Manual LibreOffice Start**
-If you need to run LibreOffice separately (e.g., for development):
-```bash
-"C:\Program Files\LibreOffice\program\soffice.exe" --accept="socket,host=localhost,port=2002;urp;StarOffice.ServiceManager"
-cd packages/libreoffice-calc-mcp
-npm run start:proxy-only
-```
-
 **Troubleshooting:**
 - **Error: "LibreOffice Calc connector isn't currently running"** → Run `npm start` which auto-starts LibreOffice
-- See `packages/libreoffice-calc-mcp/QUICKSTART.md` for detailed setup
+- See `packages/libreoffice-calc-mcp/README.md` for detailed setup
 
 **Note:** On Windows, the MCP SDK must be installed in LibreOffice's Python:
 ```bash

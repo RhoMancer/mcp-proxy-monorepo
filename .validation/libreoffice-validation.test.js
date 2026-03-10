@@ -186,18 +186,18 @@ const checkTestSpreadsheet = () => {
   }
 };
 
-// Test: Verify QUICKSTART.md instructions are accurate
+// Test: Verify README.md instructions are accurate
 const verifyQuickStartInstructions = () => {
-  log.info('Verifying QUICKSTART.md instructions...');
+  log.info('Verifying README.md has quick start instructions...');
 
-  const quickstartPath = path.join(PROXY_PATH, 'QUICKSTART.md');
-  if (!fs.existsSync(quickstartPath)) {
-    log.fail('QUICKSTART.md not found');
+  const readmePath = path.join(PROXY_PATH, 'README.md');
+  if (!fs.existsSync(readmePath)) {
+    log.fail('README.md not found');
     testResults.failed++;
     return false;
   }
 
-  const content = fs.readFileSync(quickstartPath, 'utf-8');
+  const content = fs.readFileSync(readmePath, 'utf-8');
 
   // Check for key instructions
   const checks = [
@@ -211,16 +211,16 @@ const verifyQuickStartInstructions = () => {
   let allPassed = true;
   for (const check of checks) {
     if (!check.pattern.test(content)) {
-      log.warn(`QUICKSTART.md: ${check.name} - not found`);
+      log.warn(`README.md: ${check.name} - not found`);
       allPassed = false;
     }
   }
 
   if (allPassed) {
-    log.success('QUICKSTART.md contains all key instructions');
+    log.success('README.md contains all key instructions');
     testResults.passed++;
   } else {
-    log.warn('QUICKSTART.md may be missing some instructions');
+    log.warn('README.md may be missing some instructions');
     testResults.manual++;
   }
 
