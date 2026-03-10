@@ -27,5 +27,11 @@ vi.mock('passport-oauth2', () => {
       this._verify = verify;
     }
   }
-  return { OAuth2Strategy: MockOAuth2Strategy };
+  // Provide both default and named exports since code imports as:
+  // import pkg from 'passport-oauth2';
+  // const { OAuth2Strategy } = pkg;
+  return {
+    default: { OAuth2Strategy: MockOAuth2Strategy },
+    OAuth2Strategy: MockOAuth2Strategy
+  };
 });

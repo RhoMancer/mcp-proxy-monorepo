@@ -301,13 +301,13 @@ describe('LibreOffice MCP OAuth Provider E2E Tests', () => {
       expect(response.body.active).toBe(false);
     });
 
-    it('should return active: false for missing token', async () => {
+    it('should return 400 for missing token (OAuth 2.0 spec)', async () => {
       const response = await request(app)
         .post('/auth/introspect')
         .send({})
-        .expect(200);
+        .expect(400);
 
-      expect(response.body.active).toBe(false);
+      expect(response.body.error).toBe('invalid_request');
     });
   });
 

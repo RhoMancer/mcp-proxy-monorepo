@@ -65,7 +65,11 @@ vi.mock('passport-oauth2', () => {
       done(null, {});
     }
   }
-  return { OAuth2Strategy: MockOAuth2Strategy };
+  // Provide both default and named exports
+  return {
+    default: { OAuth2Strategy: MockOAuth2Strategy },
+    OAuth2Strategy: MockOAuth2Strategy
+  };
 });
 
 // Import after mocks are set up

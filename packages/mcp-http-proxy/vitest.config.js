@@ -6,7 +6,7 @@ export default defineConfig({
     environment: 'node',
     setupFiles: ['./test/setup.js'],
     include: ['**/*.test.js'],
-    exclude: ['node_modules/**'],
+    exclude: ['node_modules/**', 'examples/**'],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],

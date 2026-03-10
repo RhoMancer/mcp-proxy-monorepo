@@ -21,7 +21,7 @@ const __dirname = path.dirname(__filename);
 
 const TEST_PORT = 8081;
 const PROXY_PATH = path.join(__dirname, '..', 'packages', 'libreoffice-calc-mcp');
-const START_BAT = path.join(PROXY_PATH, 'start-libreoffice.bat');
+const START_BAT = path.join(PROXY_PATH, 'START_LIBREOFFICE_HEADLESS.bat');
 const TEST_SPREADSHEET = path.join(PROXY_PATH, 'test-data', 'test.ods');
 
 // Color output
@@ -71,12 +71,12 @@ const checkLibreOfficeInstalled = () => {
   return null;
 };
 
-// Check if start-libreoffice.bat exists and is valid
+// Check if START_LIBREOFFICE_HEADLESS.bat exists and is valid
 const checkStartScript = () => {
-  log.info('Checking start-libreoffice.bat script...');
+  log.info('Checking START_LIBREOFFICE_HEADLESS.bat script...');
 
   if (!fs.existsSync(START_BAT)) {
-    log.fail(`start-libreoffice.bat not found at: ${START_BAT}`);
+    log.fail(`START_LIBREOFFICE_HEADLESS.bat not found at: ${START_BAT}`);
     testResults.failed++;
     return false;
   }
@@ -89,11 +89,11 @@ const checkStartScript = () => {
   const hasSocket = content.includes('socket,host=localhost,port=2002');
 
   if (hasAccept && hasHeadless && hasSocket) {
-    log.success('start-libreoffice.bat has correct socket mode parameters');
+    log.success('START_LIBREOFFICE_HEADLESS.bat has correct socket mode parameters');
     testResults.passed++;
     return true;
   } else {
-    log.fail('start-libreoffice.bat missing required parameters');
+    log.fail('START_LIBREOFFICE_HEADLESS.bat missing required parameters');
     if (!hasAccept) log.warn('  Missing: --accept parameter');
     if (!hasHeadless) log.warn('  Missing: --headless parameter');
     if (!hasSocket) log.warn('  Missing: socket configuration');
@@ -122,7 +122,7 @@ const checkSofficeRunning = async () => {
         testResults.passed++;
         resolve(true);
       } else {
-        log.warn('soffice.exe is NOT running (start it with start-libreoffice.bat)');
+        log.warn('soffice.exe is NOT running (start it with START_LIBREOFFICE_HEADLESS.bat)');
         testResults.manual++;
         resolve(false);
       }
@@ -201,7 +201,7 @@ const verifyQuickStartInstructions = () => {
 
   // Check for key instructions
   const checks = [
-    { name: 'Mentions start-libreoffice.bat', pattern: /start-libreoffice\.bat/ },
+    { name: 'Mentions START_LIBREOFFICE_HEADLESS.bat', pattern: /START_LIBREOFFICE_HEADLESS\.bat/ },
     { name: 'Mentions Task Manager check', pattern: /Task Manager/i },
     { name: 'Mentions soffice.exe', pattern: /soffice\.exe/ },
     { name: 'Has troubleshooting section', pattern: /## Troubleshooting/i },
@@ -287,7 +287,7 @@ const runTests = async () => {
 
   if (testResults.manual > 0) {
     console.log('Some tests require manual verification:');
-    console.log('1. Start LibreOffice: double-click packages/libreoffice-calc-mcp/start-libreoffice.bat');
+    console.log('1. Start LibreOffice: double-click packages/libreoffice-calc-mcp/START_LIBREOFFICE_HEADLESS.bat');
     console.log('2. Check Task Manager for soffice.exe');
     console.log('3. Run these tests again\n');
   }
