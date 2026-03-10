@@ -69,11 +69,10 @@ mcp-proxy-monorepo/
 ├── packages/
 │   ├── mcp-http-proxy/            # Generic proxy package
 │   ├── libreoffice-calc-mcp/      # LibreOffice Calc integration
-│   │   ├── start-full.bat         # LibreOffice + proxy
-│   │   ├── start.bat              # Proxy only
-│   │   ├── start-libreoffice.bat  # LibreOffice only
-│   │   └── stop.bat               # Stop everything
 │   └── libreoffice-calc-mcp-server/ # Python MCP server
+├── START_HEVY_CONNECTOR_WITH_TUNNEL.bat  # Root: Start Hevy + tunnel
+├── STOP_HEVY_CONNECTOR_WITH_TUNNEL.bat   # Root: Stop Hevy
+└── BATCH_FILES.md                 # Complete batch file reference
 ├── package.json                   # Monorepo root
 └── README.md
 ```
@@ -165,13 +164,13 @@ REM From the libreoffice-calc-mcp directory:
 cd packages\libreoffice-calc-mcp
 
 REM Option 1: Start everything (LibreOffice + proxy)
-start-full.bat
+START_LIBREOFFICE_AND_PROXY.bat
 
 REM Option 2: Just the proxy (if LibreOffice already running)
-start.bat
+START_LIBREOFFICE_PROXY.bat
 
 REM Option 3: Just LibreOffice (for manual setup)
-start-libreoffice.bat
+START_LIBREOFFICE_HEADLESS.bat
 ```
 
 **Or use npm:**

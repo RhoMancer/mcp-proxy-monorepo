@@ -26,7 +26,7 @@ An [MCP (Model Context Protocol)](https://modelcontextprotocol.io) server that p
 **Option A: Using the helper script (Recommended)**
 ```batch
 cd packages\libreoffice-calc-mcp
-start-libreoffice.bat
+START_LIBREOFFICE_HEADLESS.bat
 ```
 
 **Option B: Manual command**
@@ -134,7 +134,7 @@ PORT=8081                    # HTTP proxy port
 1. Check Task Manager for `soffice.exe`
 2. Start LibreOffice in socket mode:
    ```batch
-   start-libreoffice.bat
+   START_LIBREOFFICE_HEADLESS.bat
    ```
 3. Wait 5 seconds and restart the proxy
 

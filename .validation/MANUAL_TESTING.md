@@ -21,7 +21,7 @@ npm run test:libreoffice  # LibreOffice connection validation
 | Test | Status | Notes |
 |------|--------|-------|
 | LibreOffice installed | ✓ PASS | Found at C:\Program Files\LibreOffice\program\soffice.exe |
-| start-libreoffice.bat valid | ✓ PASS | Contains correct socket mode parameters |
+| START_LIBREOFFICE_HEADLESS.bat valid | ✓ PASS | Contains correct socket mode parameters |
 | Test spreadsheet exists | ✓ PASS | test.ods found in test-data/ |
 | README.md has quickstart | ✓ PASS | Quick start instructions present |
 | soffice.exe running | ⚠ MANUAL | Requires LibreOffice to be started |
@@ -121,7 +121,7 @@ npm run test:libreoffice  # LibreOffice connection validation
 1. **Start LibreOffice in Socket Mode:**
    ```bash
    cd packages/libreoffice-calc-mcp
-   start-libreoffice.bat
+   START_LIBREOFFICE_HEADLESS.bat
    ```
 
 2. **Verify it's Running:**
@@ -131,7 +131,7 @@ npm run test:libreoffice  # LibreOffice connection validation
 
 3. **Start the Proxy:**
    ```bash
-   start.bat
+   START_LIBREOFFICE_PROXY.bat
    ```
 
 4. **Verify Connection:**
@@ -145,14 +145,14 @@ npm run test:libreoffice  # LibreOffice connection validation
 
 6. **Stop Everything:**
    - Press Ctrl+C in proxy window
-   - Use Task Manager to end soffice.exe, or run: `stop.bat`
+   - Use Task Manager to end soffice.exe, or run: `STOP_LIBREOFFICE_PROXY.bat`
 
 ## Known Issues and Notes
 
 1. **LibreOffice Socket Mode:**
    - Cannot start if LibreOffice is already open normally
    - Must close all LibreOffice windows before using socket mode
-   - The start-libreoffice.bat script runs in background (flashes and closes)
+   - The START_LIBREOFFICE_HEADLESS.bat script runs in background (flashes and closes)
 
 2. **OAuth Configuration:**
    - GitHub OAuth apps require the callback URL to match exactly

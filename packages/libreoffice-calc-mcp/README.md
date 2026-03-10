@@ -146,7 +146,7 @@ MCP_LIBREOFFICE_PATH="C:/path/to/soffice.exe" npm start
 **Option A: Use the helper script (Easiest)**
 ```batch
 # From the libreoffice-calc-mcp directory
-start-libreoffice.bat
+START_LIBREOFFICE_HEADLESS.bat
 ```
 
 **Option B: Manual start**
@@ -163,7 +163,7 @@ start-libreoffice.bat
 **Option A: Quick Start (Recommended)**
 ```batch
 # From the libreoffice-calc-mcp directory
-start.bat
+START_LIBREOFFICE_PROXY.bat
 ```
 
 **Option B: From Command Line**
@@ -176,7 +176,7 @@ npm start
 **Option C: One-Script Start (Optional)**
 ```batch
 # Starts LibreOffice, waits, then starts the proxy
-start-full.bat
+START_LIBREOFFICE_AND_PROXY.bat
 ```
 
 #### Option D: With Cloudflare Tunnel (Optional - for remote access)
@@ -190,7 +190,7 @@ notepad config.yml
 
 Then start with:
 ```bash
-start.bat
+START_LIBREOFFICE_PROXY.bat
 ```
 
 ### How Do I Know It's Working?
@@ -235,7 +235,7 @@ Or test with your browser:
 You can also access this from ANY device using Cloudflare Tunnel:
 
 1. Set up Cloudflare tunnel (see config.example.yml)
-2. Start with: `start.bat` (includes the tunnel)
+2. Start with: `START_LIBREOFFICE_PROXY.bat` (includes the tunnel)
 
 3. Add to Claude Connectors:
 
@@ -337,13 +337,13 @@ The tool **cannot create new files**. The spreadsheet must already exist on your
 1. Check Task Manager for `soffice.exe`
 2. If not running, start it with:
    ```batch
-   start-libreoffice.bat
+   START_LIBREOFFICE_HEADLESS.bat
    ```
    Or manually:
    ```batch
    "C:\Program Files\LibreOffice\program\soffice.exe" --accept="socket,host=localhost,port=2002;urp;StarOffice.ServiceManager" --headless --nodefault --nolockcheck
    ```
-3. Wait 5 seconds and restart the proxy with `start.bat`
+3. Wait 5 seconds and restart the proxy with `START_LIBREOFFICE_PROXY.bat`
 
 ### Problem: "LibreOffice not found"
 **Solution:**
@@ -434,7 +434,8 @@ MCP_PROXY_PORT=8082
 | What | Where |
 |------|-------|
 | **Start locally** | `npm start` |
-| **Start with tunnel** | `start.bat` (requires config.yml) |
+| **Start with tunnel** | `START_LIBREOFFICE_PROXY.bat` (requires config.yml) |
+| **Start everything** | `START_LIBREOFFICE_AND_PROXY.bat` |
 | **Test health** | `curl http://127.0.0.1:8081/health` |
 | **Local URL** | `http://127.0.0.1:8081/messages` |
 | **Config file** | `mcp.config.js` |

@@ -26,8 +26,8 @@ Then edit `packages/mcp-http-proxy/.env` and add:
 
 Go to the repo root and double-click:
 ```
-START_HEVY_CONNECTOR.bat    ← Start
-STOP_HEVY_CONNECTOR.bat     ← Stop
+START_HEVY_CONNECTOR_WITH_TUNNEL.bat    ← Start
+STOP_HEVY_CONNECTOR_WITH_TUNNEL.bat     ← Stop
 ```
 
 ---
@@ -35,7 +35,7 @@ STOP_HEVY_CONNECTOR.bat     ← Stop
 ## 🎯 From This Directory
 
 ```bash
-.\start-tunnel.bat
+.\START_HEVY_WITH_TUNNEL.bat
 ```
 
 **What this command does:**
@@ -100,7 +100,7 @@ Expected response:
 
 **Option 2:** Run from this directory:
 ```bash
-.\stop.bat
+.\STOP_PROXY_AND_TUNNEL.bat
 ```
 
 **Option 3:** Just close the terminal windows
@@ -109,7 +109,7 @@ Expected response:
 
 ## 📋 What's Happening Behind the Scenes
 
-The `start-tunnel.bat` script does three things:
+The `START_HEVY_WITH_TUNNEL.bat` script does three things:
 
 1. **Starts MCP Proxy** (port 8082) - Handles OAuth and talks to Hevy API
 2. **Starts Cloudflare Tunnel** - Bridges internet → your local machine
@@ -135,7 +135,7 @@ The `start-tunnel.bat` script does three things:
 
 **Problem:** Tunnel isn't running.
 
-**Fix:** Make sure you ran `.\start-tunnel.bat` and see the Cloudflare output.
+**Fix:** Make sure you ran `.\START_HEVY_WITH_TUNNEL.bat` and see the Cloudflare output.
 
 ---
 

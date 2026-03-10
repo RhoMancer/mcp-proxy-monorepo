@@ -10,8 +10,10 @@ A generic HTTP-to-stdio proxy for any [MCP (Model Context Protocol)](https://mod
 
 **One command to run everything:**
 ```bash
-.\start-tunnel.bat
+.\START_HEVY_WITH_TUNNEL.bat
 ```
+
+**→ [BATCH_FILES.md](../../BATCH_FILES.md)** — Complete batch file reference
 
 ---
 

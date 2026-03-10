@@ -95,7 +95,7 @@ node .validation/oauth-validation.test.js
 Tests LibreOffice integration:
 
 - ✓ LibreOffice installation detection
-- ✓ `start-libreoffice.bat` script validation
+- ✓ `START_LIBREOFFICE_HEADLESS.bat` script validation
 - ✓ `soffice.exe` process detection
 - ✓ Socket connection test (port 2002)
 - ✓ Test spreadsheet availability

@@ -119,7 +119,7 @@ OAUTH_CLIENT_SECRET=<generate with: node -e "console.log(require('crypto').rando
 **Quick start with tunnel**:
 ```bash
 cd packages/mcp-http-proxy
-.\start-tunnel.bat
+.\START_HEVY_WITH_TUNNEL.bat
 ```
 
 **Claude Connectors settings**:
@@ -199,7 +199,7 @@ For HTTPS access (required for Claude Connectors from the web), use the provided
 
 ```bash
 cd packages/mcp-http-proxy
-.\start-tunnel.bat
+.\START_HEVY_WITH_TUNNEL.bat
 ```
 
 This script:
@@ -216,7 +216,7 @@ The `config.yml` file contains:
 
 To stop the tunnel:
 ```bash
-.\stop.bat
+.\STOP_PROXY_AND_TUNNEL.bat
 ```
 
 ### 1. Check Health Endpoint

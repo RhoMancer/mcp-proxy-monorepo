@@ -162,7 +162,7 @@ npm run test:oauth
 **Option A: Use the helper script (Windows)**
 ```bash
 cd packages/libreoffice-calc-mcp
-start-libreoffice.bat
+START_LIBREOFFICE_HEADLESS.bat
 ```
 
 **Option B: Manual start**
@@ -189,7 +189,7 @@ netstat -an | findstr :2002
 
 ```bash
 cd packages/libreoffice-calc-mcp
-start.bat
+START_LIBREOFFICE_PROXY.bat
 ```
 
 You should see:
@@ -245,7 +245,7 @@ stop.bat
 **2. Start LibreOffice in socket mode**
 ```bash
 cd packages/libreoffice-calc-mcp
-start-libreoffice.bat
+START_LIBREOFFICE_HEADLESS.bat
 ```
 
 **3. Start the proxy with OAuth enabled**
@@ -270,7 +270,7 @@ node src/cli.js -c ../examples/oauth-libreoffice.config.js
 
 ### LibreOffice Won't Start in Socket Mode
 
-**Problem**: `start-libreoffice.bat` flashes and closes, LibreOffice doesn't run.
+**Problem**: `START_LIBREOFFICE_HEADLESS.bat` flashes and closes, LibreOffice doesn't run.
 
 **Solutions**:
 1. Close all LibreOffice windows first
@@ -345,7 +345,7 @@ Use this checklist when testing:
 
 ### LibreOffice Tests
 - [ ] LibreOffice is installed
-- [ ] `start-libreoffice.bat` starts soffice.exe
+- [ ] `START_LIBREOFFICE_HEADLESS.bat` starts soffice.exe
 - [ ] soffice.exe visible in Task Manager
 - [ ] Port 2002 is listening
 - [ ] Proxy detects LibreOffice connection
