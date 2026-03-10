@@ -44,8 +44,12 @@ let testsSkipped = 0;
 
 /**
  * Make an HTTP request and return the result
+ * @param {string} method - HTTP method
+ * @param {string} path - Request path
+ * @param {object} headers - Request headers
+ * @param {number} timeoutMs - Request timeout in milliseconds (default: 5000)
  */
-function request(method, path, headers = {}) {
+function request(method, path, headers = {}, timeoutMs = 5000) {
   return new Promise((resolve, reject) => {
     const url = new URL(path, PROXY_URL);
     const options = {
@@ -57,6 +61,7 @@ function request(method, path, headers = {}) {
         'User-Agent': 'oauth-e2e-test',
         ...headers,
       },
+      timeout: timeoutMs,
     };
 
     const req = http.request(options, (res) => {
@@ -72,6 +77,10 @@ function request(method, path, headers = {}) {
     });
 
     req.on('error', reject);
+    req.on('timeout', () => {
+      req.destroy();
+      reject(new Error(`Request timeout after ${timeoutMs}ms`));
+    });
     req.end();
   });
 }
@@ -170,7 +179,8 @@ async function runTests() {
 
   // Test 4: SSE endpoint is protected
   await test('SSE endpoint returns 401 without auth (when OAuth enabled)', async () => {
-    const response = await request('GET', '/sse');
+    // Use short timeout for SSE - it will keep connection open if not authenticated
+    const response = await request('GET', '/sse', {}, 2000);
     const healthData = JSON.parse((await request('GET', '/health')).body);
 
     if (healthData.authEnabled) {
