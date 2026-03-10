@@ -15,11 +15,16 @@ import { spawn } from 'child_process';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import os from 'os';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const TEST_PORT = 8081;
+
+// Detect platform
+const platform = os.platform();
+const isWindows = platform === 'win32';
 const PROXY_PATH = path.join(__dirname, '..', 'packages', 'libreoffice-calc-mcp');
 const START_BAT = path.join(PROXY_PATH, 'START_LIBREOFFICE_HEADLESS.bat');
 const TEST_SPREADSHEET = path.join(PROXY_PATH, 'test-data', 'test.ods');
@@ -260,11 +265,31 @@ const testSocketConnection = async () => {
   });
 };
 
+// Check if running on supported platform
+const checkPlatform = () => {
+  if (!isWindows) {
+    log.warn(`LibreOffice validation tests are Windows-only.`);
+    log.info(`Current platform: ${platform} (${os.release()})`);
+    log.info('These tests check Windows-specific paths and commands:');
+    log.info('  - C:\\Program Files\\LibreOffice\\...');
+    log.info('  - tasklist.exe for process checking');
+    log.info('  - START_LIBREOFFICE_HEADLESS.bat script');
+    console.log('\nSkipping LibreOffice validation tests on non-Windows platform.\n');
+    return false;
+  }
+  return true;
+};
+
 // Run all tests
 const runTests = async () => {
   console.log('\n╔═══════════════════════════════════════════════════════════╗');
   console.log('║  LibreOffice Connection Validation Tests                   ║');
   console.log('╚═══════════════════════════════════════════════════════════╝\n');
+
+  // Exit early if not on Windows
+  if (!checkPlatform()) {
+    process.exit(0);  // Exit with success to avoid CI failures
+  }
 
   // Run tests
   checkLibreOfficeInstalled();
