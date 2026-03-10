@@ -1,41 +1,37 @@
 @echo off
 REM ========================================================================
-REM MCP HTTP Proxy - Start Here Guide
+REM Hevy MCP Connector - Quick Reference
 REM ========================================================================
 REM
-REM This file shows you what each batch file does.
+REM You're in the right place! Here's what you need:
+REM
+REM   TO START: Use START_HEVY_CONNECTOR.bat in the repo root
+REM   TO STOP:  Use STOP_HEVY_CONNECTOR.bat in the repo root
+REM
+REM Or run the commands directly from this directory:
+REM   - start-tunnel.bat  (starts proxy + cloudflare tunnel)
+REM   - stop.bat           (stops everything)
+REM
+REM For full documentation, see: QUICKSTART.md
 REM
 REM ========================================================================
 
 echo.
 echo ========================================================================
-echo  MCP HTTP Proxy - Hevy Connector
+echo  Hevy MCP Connector - Quick Reference
 echo ========================================================================
 echo.
-echo What do you want to do?
+echo From anywhere in the repo:
 echo.
+echo   START: START_HEVY_CONNECTOR.bat
+echo   STOP:  STOP_HEVY_CONNECTOR.bat
 echo.
-echo   [1] START EVERYTHING (Daily Quickstart)
-echo       → Run start-tunnel.bat
-echo       → Starts Proxy + Cloudflare Tunnel
-echo       → Use this for Claude Connectors
+echo Or from this directory:
 echo.
-echo   [2] START PROXY ONLY (No HTTPS)
-echo       → Run start.bat
-echo       → Starts Proxy on localhost only
-echo       → For local testing
-echo.
-echo   [3] STOP EVERYTHING
-echo       → Run stop.bat
-echo       → Stops Proxy + Tunnel
-echo.
-echo   [4] VIEW FULL DOCUMENTATION
-echo       → Open QUICKSTART.md
-echo.
+echo   START: start-tunnel.bat
+echo   STOP:  stop.bat
 echo.
 echo ========================================================================
-echo.
-echo RECOMMENDED: Just run start-tunnel.bat for daily use!
 echo.
 echo Press any key to launch start-tunnel.bat...
 pause > nul

@@ -6,25 +6,21 @@ A collection of HTTP proxies for stdio-based MCP (Model Context Protocol) server
 
 ## 🚀 **HERE FOR HEVY + CLAUDE CONNECTORS?**
 
-**→ [Daily Quickstart Guide](packages/mcp-http-proxy/QUICKSTART.md)** — One-command setup
+**→ [Daily Quickstart Guide](packages/mcp-http-proxy/QUICKSTART.md)** — Full documentation
 
-### Easiest Way (Windows)
+### Only Two Commands You Need
 
-**Double-click from anywhere in the repo:**
-```
-START_HEVY_CONNECTOR.bat
-```
+| Action | Command |
+|--------|---------|
+| **Start** | Double-click `START_HEVY_CONNECTOR.bat` |
+| **Stop** | Double-click `STOP_HEVY_CONNECTOR.bat` |
 
-### Or from Command Line
+Both files are in the repo root. That's it!
 
-```bash
-cd packages/mcp-http-proxy
-.\start-tunnel.bat
-```
-
-**New to this?** Run `START_HERE.bat` in the `mcp-http-proxy` directory for an interactive menu.
-
-This starts the MCP Proxy, Cloudflare Tunnel, and routes traffic from Claude to Hevy.
+**What happens when you start:**
+- MCP Proxy starts on port 8082 (handles OAuth authentication)
+- Cloudflare Tunnel creates HTTPS from `hevy.angussoftware.dev` → your local machine
+- Traffic routes: Claude → Cloudflare → Proxy → Hevy API
 
 **Your OAuth Client Secret:** See `packages/mcp-http-proxy/.env` file → `OAUTH_CLIENT_SECRET`
 
@@ -33,8 +29,7 @@ This starts the MCP Proxy, Cloudflare Tunnel, and routes traffic from Claude to 
 ## Overview
 
 This monorepo contains:
-- **`mcp-http-proxy`** - Generic HTTP-to-stdio proxy for any MCP server
-- **`hevy-mcp-proxy`** - HTTP proxy for [hevy-mcp](https://github.com/chrisdoc/hevy-mcp)
+- **`mcp-http-proxy`** - Generic HTTP-to-stdio proxy for any MCP server (used for Hevy)
 - **`libreoffice-calc-mcp`** - HTTP proxy + MCP server for LibreOffice Calc automation
 - **`libreoffice-calc-mcp-server`** - Python MCP server with 11 Calc tools
 
@@ -63,20 +58,22 @@ npm run start:libreoffice   # LibreOffice Calc
 
 ```
 mcp-proxy-monorepo/
-├── START_HEVY_CONNECTOR.bat      # Quick launcher for Hevy + Claude Connectors
+├── START_HEVY_CONNECTOR.bat      # Start Hevy + Claude Connectors
+├── STOP_HEVY_CONNECTOR.bat       # Stop Hevy + Claude Connectors
 ├── .env.example                   # Environment variables template
 ├── packages/
-│   ├── mcp-http-proxy/            # Generic proxy package
-│   │   ├── start-tunnel.bat       # Hevy + Cloudflare Tunnel launcher
-│   │   ├── start.bat              # Proxy-only launcher
-│   │   └── START_HERE.bat         # Interactive menu
-│   ├── hevy-mcp-proxy/            # Hevy-specific proxy
-│   ├── libreoffice-calc-mcp/       # LibreOffice Calc proxy wrapper
-│   │   ├── start-full.bat         # LibreOffice + proxy launcher
-│   │   ├── start.bat              # Proxy-only launcher
-│   │   └── start-libreoffice.bat  # LibreOffice-only launcher
-│   └── libreoffice-calc-mcp-server/ # Python MCP server (UNO/Calc)
-├── package.json                # Monorepo root (npm workspaces)
+│   ├── mcp-http-proxy/            # Generic proxy package (for Hevy)
+│   │   ├── start-tunnel.bat       # Proxy + Cloudflare Tunnel
+│   │   ├── start.bat              # Proxy only (local testing)
+│   │   ├── stop.bat               # Stop everything
+│   │   └── START_HERE.bat         # Quick reference guide
+│   ├── libreoffice-calc-mcp/      # LibreOffice Calc integration
+│   │   ├── start-full.bat         # LibreOffice + proxy
+│   │   ├── start.bat              # Proxy only
+│   │   ├── start-libreoffice.bat  # LibreOffice only
+│   │   └── stop.bat               # Stop everything
+│   └── libreoffice-calc-mcp-server/ # Python MCP server
+├── package.json                   # Monorepo root
 └── README.md
 ```
 
@@ -112,22 +109,6 @@ Generic HTTP-to-stdio proxy that can work with any MCP server.
 cd packages/mcp-http-proxy
 npm install
 npx mcp-proxy --config examples/hevy-mcp.config.js
-```
-
-### hevy-mcp-proxy
-
-HTTP proxy for [hevy-mcp](https://github.com/chrisdoc/hevy-mcp), a fitness tracking MCP server.
-
-**Features:**
-- 20+ MCP tools for workouts, routines, exercises
-- Ready to use with Claude Connectors
-- Optional Cloudflare tunnel support for HTTPS
-
-**Setup:**
-```bash
-cd packages/hevy-mcp-proxy
-echo "HEVY_API_KEY=your_key" > .env
-npm start
 ```
 
 ### libreoffice-calc-mcp

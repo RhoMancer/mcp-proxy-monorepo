@@ -1,10 +1,20 @@
 # 🚀 Daily Quickstart Guide
 
-**Start the Hevy MCP connector for Claude Connectors in ONE command.**
+**Start the Hevy MCP connector for Claude Connectors.**
 
 ---
 
-## 🎯 The Only Command You Need
+## 🎯 Easiest Way (From Anywhere)
+
+Go to the repo root and double-click:
+```
+START_HEVY_CONNECTOR.bat    ← Start
+STOP_HEVY_CONNECTOR.bat     ← Stop
+```
+
+---
+
+## 🎯 From This Directory
 
 ```bash
 .\start-tunnel.bat
@@ -61,10 +71,14 @@ Expected response:
 
 ## 🛑 When Done
 
-Close the terminal window, or run:
+**Option 1:** Double-click `STOP_HEVY_CONNECTOR.bat` (from repo root)
+
+**Option 2:** Run from this directory:
 ```bash
 .\stop.bat
 ```
+
+**Option 3:** Just close the terminal windows
 
 ---
 
