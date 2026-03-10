@@ -1,0 +1,20 @@
+{
+  "name": "echo-test-mcp-server",
+  "version": "1.0.0",
+  "description": "Simple echo MCP server for OAuth Provider testing",
+  "type": "module",
+  "bin": "./echo-mcp-server.js",
+  "scripts": {
+    "start": "node echo-mcp-server.js",
+    "test": "node echo-mcp-server.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.4"
+  },
+  "keywords": [
+    "mcp",
+    "test",
+    "echo"
+  ],
+  "license": "MIT"
+}

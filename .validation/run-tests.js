@@ -42,6 +42,11 @@ const tests = {
     file: 'oauth-validation.test.js',
     description: 'Tests OAuth authentication, protected routes, and session management'
   },
+  'oauth-e2e': {
+    name: 'OAuth End-to-End Test',
+    file: 'oauth-e2e.test.js',
+    description: 'End-to-end OAuth flow test with protected route validation'
+  },
   libreoffice: {
     name: 'LibreOffice Connection Validation',
     file: 'libreoffice-validation.test.js',

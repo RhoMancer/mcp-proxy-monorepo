@@ -39,7 +39,44 @@ npm run test:libreoffice  # LibreOffice connection validation
 
 ## Manual Testing Procedures
 
-### OAuth 2.0 End-to-End Test
+### Quick OAuth Test with Echo Server
+
+**Recommended for first-time OAuth testing!** Use the built-in echo test server:
+
+1. **Set up OAuth App (GitHub example):**
+   ```
+   1. Go to https://github.com/settings/developers
+   2. Click "New OAuth App"
+   3. Set Homepage URL: http://127.0.0.1:8080
+   4. Set Authorization callback: http://127.0.0.1:8080/auth/callback
+   5. Copy Client ID and create Client Secret
+   ```
+
+2. **Configure Environment:**
+   ```bash
+   # Create .env file in packages/mcp-http-proxy/:
+   cd packages/mcp-http-proxy
+   cat > .env << EOF
+   GITHUB_CLIENT_ID=your_client_id
+   GITHUB_CLIENT_SECRET=your_client_secret
+   OAUTH_CLIENT_SECRET=$(node -e "console.log(require('crypto').randomBytes(32).toString('base64'))")
+   EOF
+   ```
+
+3. **Start Proxy with Echo Server and OAuth:**
+   ```bash
+   npx mcp-proxy --config examples/echo-oauth-test.config.js
+   ```
+
+4. **Test the Flow:**
+   - Visit http://127.0.0.1:8080/health → Should return `{"authEnabled":true}`
+   - Visit http://127.0.0.1:8080/auth/login → Should redirect to GitHub
+   - After auth, visit http://127.0.0.1:8080/tools → Should show echo, ping, get_time, sum tools
+   - Visit http://127.0.0.1:8080/auth/me → Should show user info
+
+**See `packages/mcp-http-proxy/examples/test-server/README.md` for more details.**
+
+### OAuth 2.0 End-to-End Test with Hevy
 
 1. **Set up OAuth App (GitHub example):**
    ```

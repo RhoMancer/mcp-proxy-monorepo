@@ -1,5 +1,7 @@
 # MCP Proxy Monorepo
 
+[![Tests](https://github.com/RhoMancer/mcp-proxy-monorepo/actions/workflows/test.yml/badge.svg)](https://github.com/RhoMancer/mcp-proxy-monorepo/actions/workflows/test.yml)
+
 A collection of HTTP proxies for stdio-based MCP (Model Context Protocol) servers, built with a shared generic proxy package.
 
 ---
@@ -61,6 +63,9 @@ npm run start:libreoffice   # LibreOffice Calc
 mcp-proxy-monorepo/
 ├── .env.example                   # Environment variables template
 ├── .validation/                   # Integration tests for example implementations
+├── docs/                          # Additional documentation
+│   ├── OAUTH_QUICKSTART.md        # 5-minute OAuth setup guide
+│   └── OAUTH_TESTING_GUIDE.md     # Complete OAuth testing guide
 ├── packages/
 │   ├── mcp-http-proxy/            # Generic proxy package
 │   ├── libreoffice-calc-mcp/      # LibreOffice Calc integration
@@ -104,6 +109,7 @@ Generic HTTP-to-stdio proxy that can work with any MCP server.
 **Features:**
 - Configuration-driven MCP server spawning
 - HTTP/JSON-RPC to stdio bridging
+- OAuth 2.0 Provider mode for secure remote access
 - CORS support for browser clients
 - Health check and tools listing endpoints
 - Cloudflare tunnel configuration support
@@ -112,8 +118,34 @@ Generic HTTP-to-stdio proxy that can work with any MCP server.
 ```bash
 cd packages/mcp-http-proxy
 npm install
+
+# Use the echo test server (great for OAuth testing!)
+npx mcp-proxy --config examples/echo-test.config.js
+
+# Or with Hevy:
 npx mcp-proxy --config examples/hevy-mcp.config.js
+
+# With OAuth Provider mode:
+npx mcp-proxy --config examples/echo-oauth-test.config.js
 ```
+
+**Test Server:** The `echo-test.config.js` uses a built-in echo server — perfect for testing OAuth without external dependencies.
+
+## OAuth Provider Mode
+
+The proxy supports **OAuth 2.0 Provider mode** for secure remote access:
+
+**Quick Start:** See [docs/OAUTH_QUICKSTART.md](docs/OAUTH_QUICKSTART.md) — 5-minute setup
+
+**Full Guide:** See [docs/OAUTH_TESTING_GUIDE.md](docs/OAUTH_TESTING_GUIDE.md) — Complete OAuth testing with Claude Connectors
+
+**Test Echo Server with OAuth:**
+```bash
+cd packages/mcp-http-proxy
+npx mcp-proxy --config examples/echo-oauth-test.config.js
+```
+
+**Supported Providers:** GitHub, Google, Auth0, and any OAuth 2.0 provider
 
 ### libreoffice-calc-mcp
 
@@ -161,7 +193,32 @@ curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
 
 ## Development
 
-### Adding a New MCP Proxy
+### Workspace Structure
+
+This monorepo uses **npm workspaces** for efficient package management:
+
+```
+mcp-proxy-monorepo/
+├── packages/
+│   ├── mcp-http-proxy/          # Generic proxy (workspace package)
+│   ├── libreoffice-calc-mcp/    # Depends on mcp-http-proxy via workspace
+│   └── libreoffice-calc-mcp-server/  # Python package (not in npm workspace)
+```
+
+**Workspace Commands:**
+```bash
+# Install all dependencies at once
+npm install
+
+# Run scripts in specific workspace
+npm run dev -w packages/mcp-http-proxy
+npm start -w packages/libreoffice-calc-mcp
+
+# Run script in all workspaces
+npm run clean -ws --if-present
+```
+
+**Adding a New MCP Proxy**
 
 1. Create a new package in `packages/your-mcp-proxy/`
 2. Add a `package.json` that depends on `mcp-http-proxy`

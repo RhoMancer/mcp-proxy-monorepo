@@ -4,7 +4,10 @@
   "description": "Generic HTTP-to-stdio proxy for any MCP (Model Context Protocol) server",
   "type": "module",
   "main": "src/ProxyServer.js",
-  "exports": "./src/ProxyServer.js",
+  "exports": {
+    ".": "./src/ProxyServer.js",
+    "./cli": "./src/cli.js"
+  },
   "bin": {
     "mcp-proxy": "src/cli.js"
   },

@@ -24,6 +24,7 @@ npm test
 
 # Run specific test suites
 npm run test:oauth        # OAuth 2.0 flow validation
+npm run test:oauth-e2e    # End-to-end OAuth flow test (requires proxy running)
 npm run test:libreoffice  # LibreOffice connection validation
 
 # Interactive OAuth setup
@@ -41,6 +42,28 @@ npm run setup:oauth
 ## Test Suites
 
 ## Test Suites
+
+### OAuth 2.0 End-to-End Test (`oauth-e2e.test.js`)
+
+Automated end-to-end test for OAuth authentication flow:
+
+- ✓ Health endpoint reports auth status correctly
+- ✓ Protected routes (`/sse`, `/message`, `/tools`) return 401 without auth
+- ✓ Public routes (`/health`, `/mcp`) remain accessible
+- ✓ Auth endpoints (`/auth/login`, `/auth/me`) are properly configured
+
+**Prerequisites:**
+- Proxy server running on http://127.0.0.1:8080 with OAuth enabled
+
+**Run:**
+```bash
+# Start the proxy first
+cd packages/mcp-http-proxy
+npx mcp-proxy --config examples/echo-oauth-test.config.js
+
+# In another terminal, run the e2e test
+npm run test:oauth-e2e
+```
 
 ### OAuth 2.0 Flow Validation (`oauth-validation.test.js`)
 

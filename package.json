@@ -17,6 +17,7 @@
     "setup:oauth": "node .validation/setup-oauth.js",
     "test": "node .validation/run-tests.js all",
     "test:oauth": "node .validation/run-tests.js oauth",
+    "test:oauth-e2e": "node .validation/oauth-e2e.test.js",
     "test:libreoffice": "node .validation/run-tests.js libreoffice",
     "test:integration": "node .validation/run-tests.js all"
   },
