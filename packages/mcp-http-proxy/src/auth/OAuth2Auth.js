@@ -8,7 +8,8 @@
  */
 
 import passport from 'passport';
-import { OAuth2Strategy } from 'passport-oauth2';
+import pkg from 'passport-oauth2';
+const { OAuth2Strategy } = pkg;
 
 /**
  * OAuth 2.0 Authentication Manager

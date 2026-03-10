@@ -9,7 +9,7 @@
  * 1. In Claude web app, go to "Add custom connector" (Beta)
  * 2. Fill in the following fields:
  *    - Name: LibreOffice Calc (or your preferred name)
- *    - Remote MCP server URL: http://127.0.0.1:8081/mcp
+ *    - Remote MCP server URL: http://127.0.0.1:8081/message
  *    - OAuth Client ID: claude-libreoffice-client
  *    - OAuth Client Secret: libre-secret-key-change-me
  *

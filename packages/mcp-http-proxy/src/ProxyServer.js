@@ -8,6 +8,7 @@
  */
 
 import { spawn } from 'child_process';
+import crypto from 'crypto';
 import express from 'express';
 import cookieParser from 'cookie-parser';
 import session from 'express-session';
@@ -116,6 +117,7 @@ export class ProxyServer {
     });
 
     this.app.use(express.json());
+    this.app.use(express.urlencoded({ extended: true }));
   }
 
   /**
@@ -144,6 +146,126 @@ export class ProxyServer {
         oauthProviderEnabled: this.oauthProviderEnabled
       });
     });
+
+    // OAuth Provider authorize endpoint at top level for Claude Connectors
+    // Claude calls /authorize directly (not /auth/authorize)
+    if (this.oauthProviderEnabled) {
+      const oauthProvider = this.oauthProvider;
+
+      // Mount the authorize route at the top level
+      this.app.get('/authorize', (req, res, next) => {
+        console.log('[OAuth] /authorize request:', req.query);
+        const authRouter = oauthProvider.getAuthRoutes();
+        req.url = '/authorize';
+        authRouter(req, res, next);
+      });
+
+      // Handle POST to /token at top level
+      this.app.post('/token', (req, res) => {
+        console.log('[OAuth] /token request (top-level):', {
+          'content-type': req.headers['content-type'],
+          body_keys: Object.keys(req.body),
+          grant_type: req.body?.grant_type,
+          raw_body: JSON.stringify(req.body)?.substring(0, 200)
+        });
+        const authRouter = oauthProvider.getAuthRoutes();
+        req.url = '/token';
+        // Manually handle the token endpoint to avoid body parsing issues
+        const { grant_type, client_id, client_secret, code, redirect_uri, code_verifier } = req.body;
+
+        if (grant_type === 'authorization_code') {
+          // Authorization Code Flow with PKCE (for Claude Connectors)
+          if (!code) {
+            return res.status(400).json({
+              error: 'invalid_request',
+              error_description: 'Missing authorization code'
+            });
+          }
+
+          if (!code_verifier) {
+            return res.status(400).json({
+              error: 'invalid_request',
+              error_description: 'Missing code_verifier (PKCE required)'
+            });
+          }
+
+          // Look up the authorization code
+          const authCodeData = oauthProvider.authCodes.get(code);
+          if (!authCodeData) {
+            console.log('[OAuth] Invalid auth code:', code);
+            return res.status(400).json({
+              error: 'invalid_grant',
+              error_description: 'Invalid or expired authorization code'
+            });
+          }
+
+          // Check if code has expired
+          if (authCodeData.expiresAt < Date.now()) {
+            oauthProvider.authCodes.delete(code);
+            return res.status(400).json({
+              error: 'invalid_grant',
+              error_description: 'Authorization code has expired'
+            });
+          }
+
+          // Verify redirect URI matches
+          if (redirect_uri && redirect_uri !== authCodeData.redirectUri) {
+            return res.status(400).json({
+              error: 'invalid_grant',
+              error_description: 'Redirect URI mismatch'
+            });
+          }
+
+          // Verify PKCE code challenge
+          const expectedChallenge = crypto
+            .createHash('sha256')
+            .update(code_verifier)
+            .digest('base64url');
+
+          if (authCodeData.codeChallenge !== expectedChallenge) {
+            return res.status(400).json({
+              error: 'invalid_grant',
+              error_description: 'Invalid code_verifier'
+            });
+          }
+
+          // Delete the used authorization code (single use)
+          oauthProvider.authCodes.delete(code);
+
+          // Issue token
+          const tokenResponse = oauthProvider.issueToken(authCodeData.clientId);
+          console.log('[OAuth] Issued token via authorization_code for:', authCodeData.clientId);
+          return res.json(tokenResponse);
+
+        } else if (grant_type === 'client_credentials') {
+          // Client Credentials Flow (simple mode)
+          if (!client_id || !client_secret) {
+            return res.status(400).json({
+              error: 'invalid_request',
+              error_description: 'client_id and client_secret are required'
+            });
+          }
+
+          if (!oauthProvider.validateClient(client_id, client_secret)) {
+            return res.status(401).json({
+              error: 'invalid_client',
+              error_description: 'Invalid client credentials'
+            });
+          }
+
+          const tokenResponse = oauthProvider.issueToken(client_id);
+          console.log('[OAuth] Issued token via client_credentials for:', client_id);
+          return res.json(tokenResponse);
+
+        } else {
+          console.log('[OAuth] Unsupported grant_type:', grant_type);
+          return res.status(400).json({
+            error: 'unsupported_grant_type',
+            error_description: 'Supported grant types: authorization_code, client_credentials'
+          });
+        }
+      });
+    }
 
     // Apply authentication middleware to protected routes (if enabled)
     // OAuth Provider mode takes precedence over OAuth 2.0 redirect mode

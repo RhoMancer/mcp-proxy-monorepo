@@ -17,6 +17,7 @@
 
 import crypto from 'crypto';
 import { promisify } from 'util';
+import express from 'express';
 
 const randomBytes = promisify(crypto.randomBytes);
 
@@ -108,6 +109,9 @@ export class OAuthProviderAuth {
     this.config = config;
     this.tokenStore = new TokenStore();
     this.tokenSecret = config.tokenSecret || this._generateSecret();
+
+    // Store authorization codes temporarily (for PKCE flow)
+    this.authCodes = new Map();
 
     // Build client lookup map
     this.clients = new Map();
@@ -326,49 +330,181 @@ export class OAuthProviderAuth {
    * @returns {Object} Express router with auth routes
    */
   getAuthRoutes() {
-    const express = require('express');
     const router = express.Router();
 
     /**
+     * Authorization endpoint - OAuth 2.0 Authorization Endpoint
+     * Handles Claude Connectors authorization requests with PKCE
+     *
+     * GET /auth/authorize or /authorize
+     * Query: response_type, client_id, redirect_uri, code_challenge, code_challenge_method, state, scope
+     */
+    router.get('/authorize', (req, res) => {
+      const {
+        response_type,
+        client_id,
+        redirect_uri,
+        code_challenge,
+        code_challenge_method,
+        state,
+        scope
+      } = req.query;
+
+      // Validate required parameters
+      if (!response_type || response_type !== 'code') {
+        return res.status(400).send('Invalid response_type. Must be "code".');
+      }
+
+      if (!client_id) {
+        return res.status(400).send('Missing client_id');
+      }
+
+      if (!redirect_uri) {
+        return res.status(400).send('Missing redirect_uri');
+      }
+
+      if (!code_challenge) {
+        return res.status(400).send('Missing code_challenge (PKCE required)');
+      }
+
+      if (!code_challenge_method || code_challenge_method !== 'S256') {
+        return res.status(400).send('code_challenge_method must be S256');
+      }
+
+      // Generate authorization code
+      const authCode = crypto.randomBytes(32).toString('base64url');
+
+      // Store the code with its associated data for later verification
+      this.authCodes.set(authCode, {
+        clientId: client_id,
+        redirectUri: redirect_uri,
+        codeChallenge: code_challenge,
+        codeChallengeMethod: code_challenge_method,
+        scope: scope || 'claudeai',
+        expiresAt: Date.now() + 10 * 60 * 1000 // 10 minutes
+      });
+
+      console.log(`[OAuth] Generated auth code for client: ${client_id}`);
+
+      // Redirect back to Claude with the authorization code
+      const redirectUrl = new URL(redirect_uri);
+      redirectUrl.searchParams.set('code', authCode);
+      if (state) {
+        redirectUrl.searchParams.set('state', state);
+      }
+
+      console.log(`[OAuth] Redirecting to: ${redirectUrl.href}`);
+      res.redirect(redirectUrl.href);
+    });
+
+    /**
      * Token endpoint - OAuth 2.0 Token Endpoint
-     * Compatible with Claude Connectors OAuth flow
+     * Supports both client_credentials and authorization_code (PKCE) flows
      *
      * POST /auth/token
-     * Body: {
-     *   grant_type: 'client_credentials',
-     *   client_id: string,
-     *   client_secret: string
-     * }
      */
     router.post('/token', (req, res) => {
-      const { grant_type, client_id, client_secret } = req.body;
+      const { grant_type, client_id, client_secret, code, redirect_uri, code_verifier } = req.body;
 
-      // Validate grant type
-      if (grant_type !== 'client_credentials') {
+      // Debug logging
+      console.log('[OAuth] /token request:', {
+        grant_type,
+        client_id,
+        has_code: !!code,
+        has_code_verifier: !!code_verifier,
+        has_client_secret: !!client_secret,
+        body_keys: Object.keys(req.body)
+      });
+
+      if (grant_type === 'authorization_code') {
+        // Authorization Code Flow with PKCE (for Claude Connectors)
+        if (!code) {
+          return res.status(400).json({
+            error: 'invalid_request',
+            error_description: 'Missing authorization code'
+          });
+        }
+
+        if (!code_verifier) {
+          return res.status(400).json({
+            error: 'invalid_request',
+            error_description: 'Missing code_verifier (PKCE required)'
+          });
+        }
+
+        // Look up the authorization code
+        const authCodeData = this.authCodes.get(code);
+        if (!authCodeData) {
+          return res.status(400).json({
+            error: 'invalid_grant',
+            error_description: 'Invalid or expired authorization code'
+          });
+        }
+
+        // Check if code has expired
+        if (authCodeData.expiresAt < Date.now()) {
+          this.authCodes.delete(code);
+          return res.status(400).json({
+            error: 'invalid_grant',
+            error_description: 'Authorization code has expired'
+          });
+        }
+
+        // Verify redirect URI matches
+        if (redirect_uri && redirect_uri !== authCodeData.redirectUri) {
+          return res.status(400).json({
+            error: 'invalid_grant',
+            error_description: 'Redirect URI mismatch'
+          });
+        }
+
+        // Verify PKCE code challenge
+        const expectedChallenge = crypto
+          .createHash('sha256')
+          .update(code_verifier)
+          .digest('base64url');
+
+        if (authCodeData.codeChallenge !== expectedChallenge) {
+          return res.status(400).json({
+            error: 'invalid_grant',
+            error_description: 'Invalid code_verifier'
+          });
+        }
+
+        // Delete the used authorization code (single use)
+        this.authCodes.delete(code);
+
+        // For auth code flow, accept any client_id that was used in the authorize step
+        const tokenResponse = this.issueToken(authCodeData.clientId);
+        console.log(`[OAuth] Issued token via authorization_code for: ${authCodeData.clientId}`);
+        res.json(tokenResponse);
+
+      } else if (grant_type === 'client_credentials') {
+        // Client Credentials Flow (simple mode)
+        if (!client_id || !client_secret) {
+          return res.status(400).json({
+            error: 'invalid_request',
+            error_description: 'client_id and client_secret are required'
+          });
+        }
+
+        if (!this.validateClient(client_id, client_secret)) {
+          return res.status(401).json({
+            error: 'invalid_client',
+            error_description: 'Invalid client credentials'
+          });
+        }
+
+        const tokenResponse = this.issueToken(client_id);
+        console.log(`[OAuth] Issued token via client_credentials for: ${client_id}`);
+        res.json(tokenResponse);
+
+      } else {
         return res.status(400).json({
           error: 'unsupported_grant_type',
-          error_description: 'Only client_credentials grant type is supported'
+          error_description: 'Supported grant types: authorization_code, client_credentials'
         });
       }
-
-      // Validate credentials
-      if (!client_id || !client_secret) {
-        return res.status(400).json({
-          error: 'invalid_request',
-          error_description: 'client_id and client_secret are required'
-        });
-      }
-
-      if (!this.validateClient(client_id, client_secret)) {
-        return res.status(401).json({
-          error: 'invalid_client',
-          error_description: 'Invalid client credentials'
-        });
-      }
-
-      // Issue token
-      const tokenResponse = this.issueToken(client_id);
-      res.json(tokenResponse);
     });
 
     /**

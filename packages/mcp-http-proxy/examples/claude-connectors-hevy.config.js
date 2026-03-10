@@ -9,7 +9,7 @@
  * 1. In Claude web app, go to "Add custom connector" (Beta)
  * 2. Fill in the following fields:
  *    - Name: Hevy Workout Tracker (or your preferred name)
- *    - Remote MCP server URL: http://127.0.0.1:8082/mcp
+ *    - Remote MCP server URL: http://127.0.0.1:8082/message
  *    - OAuth Client ID: claude-hevy-client
  *    - OAuth Client Secret: hevy-secret-key-change-me
  *
@@ -39,6 +39,11 @@ export default {
   server: {
     port: 8082,
     host: '127.0.0.1'
+  },
+  // Cloudflare tunnel for external HTTPS access
+  tunnel: {
+    domain: 'hevy.angussoftware.dev',
+    tunnelId: 'e02235fc-0f81-42c7-b997-ec10be64c5ba'
   },
   // OAuth Provider mode for Claude Connectors
   oauthProvider: {
