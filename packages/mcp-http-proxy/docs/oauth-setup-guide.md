@@ -2,6 +2,18 @@
 
 This guide provides detailed step-by-step instructions for configuring OAuth 2.0 authentication with the MCP HTTP Proxy using common identity providers.
 
+## Authentication Modes Overview
+
+The MCP HTTP Proxy supports two authentication modes:
+
+1. **OAuth 2.0 Mode** (`auth` config) - Users are redirected to GitHub, Google, etc. to authenticate. Use this for user-facing applications where you want to restrict access based on user identity.
+
+2. **OAuth Provider Mode** (`oauthProvider` config) - The proxy acts as an OAuth provider, validating client credentials directly. Use this for [Claude Connectors](claude-connectors-guide.md) where Claude authenticates with client credentials.
+
+> **For Claude Connectors setup**, see the [Claude Connectors Guide](claude-connectors-guide.md) instead of this guide.
+
+This guide covers **OAuth 2.0 Mode** for user authentication.
+
 ## Table of Contents
 
 - [GitHub OAuth](#github-oauth)

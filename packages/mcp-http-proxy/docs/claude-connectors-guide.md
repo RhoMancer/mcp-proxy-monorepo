@@ -1,0 +1,302 @@
+# Claude Connectors Setup Guide
+
+This guide explains how to configure MCP servers with OAuth authentication for use with **Claude Connectors** in the Claude web app.
+
+## Table of Contents
+
+- [Overview](#overview)
+- [OAuth Provider Mode](#oauth-provider-mode)
+- [Configuration Examples](#configuration-examples)
+- [Testing Your Setup](#testing-your-setup)
+- [Troubleshooting](#troubleshooting)
+
+## Overview
+
+Claude Connectors allows you to connect Claude to custom MCP servers. The mcp-proxy supports two authentication modes:
+
+| Mode | Configuration | Use Case |
+|------|--------------|----------|
+| **No Auth** | No `auth` or `oauthProvider` | Local development, trusted networks |
+| **OAuth Provider** | `oauthProvider` config | Secure access with client credentials |
+| **OAuth 2.0** | `auth` config | User authentication via GitHub/Google/etc |
+
+For Claude Connectors, **OAuth Provider mode** is recommended as it provides secure authentication without requiring user login redirects.
+
+## OAuth Provider Mode
+
+OAuth Provider mode enables your mcp-proxy to validate OAuth client credentials and issue JWT access tokens. Claude Connectors will:
+
+1. Send client credentials to `/auth/token`
+2. Receive a JWT access token
+3. Include the token in subsequent requests via `Authorization: Bearer` header
+
+### Quick Setup
+
+1. **Create a configuration file** (`claude-connectors.config.js`):
+
+   ```js
+   export default {
+     mcp: {
+       command: 'npx',
+       args: ['-y', 'your-mcp-server'],
+       env: {
+         // Environment variables for your MCP server
+         API_KEY: process.env.YOUR_API_KEY
+       }
+     },
+     server: {
+       port: 8080,
+       host: '127.0.0.1'
+     },
+     oauthProvider: {
+       defaultSecret: process.env.OAUTH_CLIENT_SECRET || 'your-secret-key'
+     }
+   };
+   ```
+
+2. **Start the proxy**:
+   ```bash
+   cd packages/mcp-http-proxy
+   node src/cli.js -c ../examples/claude-connectors-your-server.config.js
+   ```
+
+3. **Add to Claude Connectors**:
+   - Open Claude web app
+   - Go to "Add custom connector" (Beta feature)
+   - Fill in:
+     - **Name**: Your choice (e.g., "Hevy Workout Tracker")
+     - **Remote MCP server URL**: `http://127.0.0.1:8080/message`
+     - **OAuth Client ID**: Any identifier (e.g., "claude-client")
+     - **OAuth Client Secret**: Must match your `defaultSecret` value
+
+## Configuration Examples
+
+### Hevy Workout Tracker
+
+**Configuration**: `examples/claude-connectors-hevy.config.js`
+
+```js
+export default {
+  mcp: {
+    command: 'npx',
+    args: ['-y', 'hevy-mcp'],
+    env: {
+      HEVY_API_KEY: process.env.HEVY_API_KEY
+    }
+  },
+  server: {
+    port: 8082,
+    host: '127.0.0.1'
+  },
+  oauthProvider: {
+    defaultSecret: process.env.OAUTH_CLIENT_SECRET || 'hevy-secret-key-change-me'
+  }
+};
+```
+
+**Claude Connectors settings**:
+| Field | Value |
+|-------|-------|
+| Name | Hevy Workout Tracker |
+| Remote MCP server URL | `http://127.0.0.1:8082/message` |
+| OAuth Client ID | `claude-hevy-client` (or any value) |
+| OAuth Client Secret | `hevy-secret-key-change-me` |
+
+### LibreOffice Calc
+
+**Configuration**: `examples/claude-connectors-libreoffice.config.js`
+
+```js
+export default {
+  mcp: {
+    command: 'npx',
+    args: ['-y', 'libreoffice-calc-mcp'],
+    env: {
+      LIBREOFFICE_HOST: process.env.LIBREOFFICE_HOST || 'localhost',
+      LIBREOFFICE_PORT: process.env.LIBREOFFICE_PORT || '2002'
+    }
+  },
+  server: {
+    port: 8081,
+    host: '127.0.0.1'
+  },
+  oauthProvider: {
+    defaultSecret: process.env.OAUTH_CLIENT_SECRET || 'libre-secret-key-change-me'
+  }
+};
+```
+
+**Claude Connectors settings**:
+| Field | Value |
+|-------|-------|
+| Name | LibreOffice Calc |
+| Remote MCP server URL | `http://127.0.0.1:8081/message` |
+| OAuth Client ID | `claude-libreoffice-client` |
+| OAuth Client Secret | `libre-secret-key-change-me` |
+
+### Multiple Clients
+
+If you need different credentials for different applications:
+
+```js
+oauthProvider: {
+  allowedClients: [
+    {
+      clientId: 'claude-connectors',
+      clientSecret: 'secret-for-claude',
+      name: 'Claude Connectors'
+    },
+    {
+      clientId: 'my-other-app',
+      clientSecret: 'different-secret',
+      name: 'My Other Application'
+    }
+  ],
+  tokenExpiration: 24 * 60 * 60 * 1000
+}
+```
+
+## Testing Your Setup
+
+### 1. Check Health Endpoint
+
+```bash
+curl http://127.0.0.1:8080/health
+```
+
+Expected response:
+```json
+{
+  "status": "ok",
+  "oauthProviderEnabled": true,
+  "mcpRunning": true
+}
+```
+
+### 2. Test Token Endpoint
+
+```bash
+curl -X POST http://127.0.0.1:8080/auth/token \
+  -H "Content-Type: application/json" \
+  -d '{
+    "grant_type": "client_credentials",
+    "client_id": "test-client",
+    "client_secret": "your-secret-key"
+  }'
+```
+
+Expected response:
+```json
+{
+  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "token_type": "Bearer",
+  "expires_in": 86400,
+  "scope": "mcp:all"
+}
+```
+
+### 3. Test Protected Endpoint with Token
+
+```bash
+# Replace ACCESS_TOKEN with the token from step 2
+curl http://127.0.0.1:8080/tools \
+  -H "Authorization: Bearer ACCESS_TOKEN"
+```
+
+### 4. Test Token Introspection
+
+```bash
+curl -X POST http://127.0.0.1:8080/auth/introspect \
+  -H "Content-Type: application/json" \
+  -d '{"token": "ACCESS_TOKEN"}'
+```
+
+Expected response:
+```json
+{
+  "active": true,
+  "scope": "mcp:all",
+  "client_id": "test-client",
+  "exp": 1234567890,
+  "iat": 1234567890
+}
+```
+
+## Troubleshooting
+
+### "Unauthorized" Error in Claude Connectors
+
+1. **Verify the proxy is running**:
+   ```bash
+   curl http://127.0.0.1:8080/health
+   ```
+
+2. **Check OAuth credentials match**:
+   - The `OAuth Client Secret` in Claude must match your `defaultSecret` or an `allowedClients` entry
+
+3. **Test token endpoint manually**:
+   ```bash
+   curl -X POST http://127.0.0.1:8080/auth/token \
+     -H "Content-Type: application/json" \
+     -d '{"grant_type": "client_credentials", "client_id": "test", "client_secret": "your-secret"}'
+   ```
+
+### Port Already in Use
+
+```bash
+# Windows
+netstat -ano | findstr :8080
+
+# macOS/Linux
+lsof -i :8080
+```
+
+Use a different port in your configuration if needed.
+
+### MCP Process Not Starting
+
+Check that:
+1. The MCP server is installed: `npx -y your-mcp-server`
+2. Required environment variables are set
+3. The command and args are correct
+
+### Token Expired
+
+Tokens expire after 24 hours by default. Claude Connectors should automatically request a new token when needed. If not, check the proxy logs for errors.
+
+## Security Best Practices
+
+1. **Use strong secrets** - Generate random secrets with `openssl rand -base64 32`
+2. **Use environment variables** - Never commit secrets to git
+3. **Use HTTPS in production** - Configure secure cookies when using HTTPS
+4. **Set appropriate token expiration** - Balance security and user experience
+5. **Rotate secrets periodically** - Change client secrets regularly
+
+## Advanced Configuration
+
+### Custom Token Expiration
+
+```js
+oauthProvider: {
+  defaultSecret: 'your-secret',
+  tokenExpiration: 12 * 60 * 60 * 1000  // 12 hours
+}
+```
+
+### Multiple Connectors on Different Ports
+
+You can run multiple MCP servers simultaneously by using different ports:
+
+| Server | Port | Config File |
+|--------|------|-------------|
+| Hevy | 8082 | `claude-connectors-hevy.config.js` |
+| LibreOffice | 8081 | `claude-connectors-libreoffice.config.js` |
+| Custom | 8083 | Your config |
+
+Start each proxy in a separate terminal.
+
+## Additional Resources
+
+- [Main README](../README.md)
+- [OAuth 2.0 Setup Guide](oauth-setup-guide.md)
+- [Example Configurations](../examples/)

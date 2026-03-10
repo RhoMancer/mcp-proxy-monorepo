@@ -10,6 +10,7 @@ A generic HTTP-to-stdio proxy for any [MCP (Model Context Protocol)](https://mod
 - 🚀 **Zero dependencies on the MCP server** - No need to modify server code
 - 📡 **Cloudflare Tunnel ready** - Easy HTTPS tunneling support
 - 🔒 **OAuth 2.0 authentication** - Secure access with OAuth providers (GitHub, Google, etc.)
+- 🔑 **OAuth Provider mode** - Act as an OAuth provider for Claude Connectors
 - 🔐 **User/domain restrictions** - Limit access to specific users or email domains
 - 🔒 **CORS enabled** - Works with browser-based clients
 
@@ -74,7 +75,7 @@ export default {
     tunnelId: string     // Cloudflare tunnel ID
   },
 
-  // OAuth 2.0 authentication (optional)
+  // OAuth 2.0 authentication (optional - redirects to GitHub, Google, etc.)
   auth: {
     provider: {
       authorizationURL: string,  // OAuth authorization URL
@@ -91,6 +92,19 @@ export default {
     },
     allowedUsers?: string[],     // Allowed user emails (optional)
     allowedDomains?: string[]    // Allowed email domains (optional)
+  },
+
+  // OAuth Provider mode (optional - for Claude Connectors)
+  oauthProvider: {
+    defaultSecret?: string,      // Shared secret for all clients (simple mode)
+    allowedClients?: [           // Multiple clients with different secrets
+      {
+        clientId: string,        // Client ID
+        clientSecret: string,    // Client secret
+        name?: string            // Client name (optional)
+      }
+    ],
+    tokenExpiration?: number     // Token expiration in ms (default: 24h)
   }
 };
 ```
@@ -165,10 +179,12 @@ export default {
 | Endpoint | Method | Purpose | Auth Required |
 |----------|--------|---------|---------------|
 | `/health` | GET | Health check | No |
-| `/auth/login` | GET | Initiate OAuth login | - |
-| `/auth/callback` | GET | OAuth callback | - |
-| `/auth/me` | GET | Current user info | - |
-| `/auth/logout` | POST | Logout | - |
+| `/auth/login` | GET | Initiate OAuth login (OAuth 2.0 mode) | - |
+| `/auth/callback` | GET | OAuth callback (OAuth 2.0 mode) | - |
+| `/auth/token` | POST | Get access token (OAuth Provider mode) | - |
+| `/auth/introspect` | POST | Validate token (OAuth Provider mode) | - |
+| `/auth/me` | GET | Current user info | Yes* |
+| `/auth/logout` | POST | Logout | Yes* |
 | `/tools` | GET | List available MCP tools | Yes* |
 | `/message` | POST | JSON-RPC endpoint | Yes* |
 | `/messages` | POST | JSON-RPC endpoint (alias) | Yes* |
@@ -178,6 +194,8 @@ export default {
 
 ## Using with Claude
 
+### Without Authentication
+
 1. Start the proxy:
    ```bash
    npx mcp-proxy
@@ -186,6 +204,46 @@ export default {
 2. Add to Claude Connectors:
    - **Name**: Your MCP Server
    - **Remote MCP server URL**: `http://127.0.0.1:8080/message`
+
+### With OAuth Provider Mode (Recommended for Claude Connectors)
+
+OAuth Provider mode allows you to secure your MCP connector with OAuth credentials that you configure in Claude Connectors.
+
+1. **Create a config with OAuth Provider mode** (`claude-connectors.config.js`):
+
+   ```js
+   export default {
+     mcp: {
+       command: 'npx',
+       args: ['-y', 'your-mcp-server'],
+       env: {
+         API_KEY: process.env.YOUR_API_KEY
+       }
+     },
+     server: {
+       port: 8080,
+       host: '127.0.0.1'
+     },
+     oauthProvider: {
+       // Simple mode: use a shared secret
+       defaultSecret: process.env.OAUTH_CLIENT_SECRET || 'your-secret-key-change-me',
+       tokenExpiration: 24 * 60 * 60 * 1000  // 24 hours
+     }
+   };
+   ```
+
+2. **Start the proxy**:
+   ```bash
+   node src/cli.js -c claude-connectors.config.js
+   ```
+
+3. **Add to Claude Connectors**:
+   - **Name**: Your MCP Server
+   - **Remote MCP server URL**: `http://127.0.0.1:8080/message`
+   - **OAuth Client ID**: `any-client-id` (or your preferred identifier)
+   - **OAuth Client Secret**: `your-secret-key-change-me` (must match your config)
+
+> **📖 See examples**: Complete configuration examples for Hevy and LibreOffice are available in `examples/claude-connectors-hevy.config.js` and `examples/claude-connectors-libreoffice.config.js`.
 
 ## Cloudflare Tunnel Setup (Optional)
 
@@ -324,6 +382,167 @@ auth: {
     secure: true  // Force secure cookies (HTTPS only)
   }
 }
+```
+
+## OAuth Provider Mode (for Claude Connectors)
+
+OAuth Provider mode enables the mcp-proxy to act as an OAuth provider, allowing clients like Claude Connectors to authenticate using OAuth client credentials. This is different from OAuth 2.0 redirect mode:
+
+- **OAuth 2.0 mode** (`auth`): Users are redirected to GitHub, Google, etc. to authenticate
+- **OAuth Provider mode** (`oauthProvider`): Clients send client_id/client_secret directly to get a JWT access token
+
+### Quick Setup
+
+1. **Create a config with OAuth Provider mode**:
+
+   ```js
+   // mcp.config.js
+   export default {
+     mcp: {
+       command: 'npx',
+       args: ['-y', 'your-mcp-server']
+     },
+     server: {
+       port: 8080
+     },
+     oauthProvider: {
+       // Simple mode: any client_id works with this secret
+       defaultSecret: process.env.OAUTH_CLIENT_SECRET || 'change-me-in-production'
+     }
+   };
+   ```
+
+2. **Start the proxy**:
+   ```bash
+   npx mcp-proxy --config mcp.config.js
+   ```
+
+3. **Configure Claude Connectors**:
+   - **Name**: Your MCP Server
+   - **Remote MCP server URL**: `http://127.0.0.1:8080/message`
+   - **OAuth Client ID**: `any-identifier` (your choice)
+   - **OAuth Client Secret**: `change-me-in-production` (must match config)
+
+### Configuration Options
+
+#### Simple Mode (Shared Secret)
+
+All clients use the same secret:
+
+```js
+oauthProvider: {
+  defaultSecret: 'shared-secret-key',
+  tokenExpiration: 24 * 60 * 60 * 1000  // 24 hours
+}
+```
+
+#### Multiple Clients Mode
+
+Each client has unique credentials:
+
+```js
+oauthProvider: {
+  allowedClients: [
+    {
+      clientId: 'claude-connectors',
+      clientSecret: 'secret-for-claude',
+      name: 'Claude Connectors'
+    },
+    {
+      clientId: 'another-app',
+      clientSecret: 'different-secret',
+      name: 'Another Application'
+    }
+  ],
+  tokenExpiration: 12 * 60 * 60 * 1000  // 12 hours
+}
+```
+
+### OAuth Provider Endpoints
+
+| Endpoint | Method | Purpose |
+|----------|--------|---------|
+| `/auth/token` | POST | Exchange client credentials for access token |
+| `/auth/introspect` | POST | Validate an access token |
+| `/auth/me` | GET | Get info about authenticated client |
+| `/auth/logout` | POST | Revoke an access token |
+
+#### Token Request Example
+
+```bash
+curl -X POST http://127.0.0.1:8080/auth/token \
+  -H "Content-Type: application/json" \
+  -d '{
+    "grant_type": "client_credentials",
+    "client_id": "claude-connectors",
+    "client_secret": "shared-secret-key"
+  }'
+```
+
+Response:
+```json
+{
+  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "token_type": "Bearer",
+  "expires_in": 86400,
+  "scope": "mcp:all"
+}
+```
+
+#### Using the Access Token
+
+```bash
+curl http://127.0.0.1:8080/tools \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+```
+
+### Complete Example: Hevy MCP with OAuth Provider
+
+See `examples/claude-connectors-hevy.config.js` for a complete configuration:
+
+```js
+export default {
+  mcp: {
+    command: 'npx',
+    args: ['-y', 'hevy-mcp'],
+    env: {
+      HEVY_API_KEY: process.env.HEVY_API_KEY
+    }
+  },
+  server: {
+    port: 8082,
+    host: '127.0.0.1'
+  },
+  oauthProvider: {
+    defaultSecret: process.env.OAUTH_CLIENT_SECRET || 'hevy-secret-key-change-me',
+    tokenExpiration: 24 * 60 * 60 * 1000
+  }
+};
+```
+
+### Complete Example: LibreOffice Calc MCP with OAuth Provider
+
+See `examples/claude-connectors-libreoffice.config.js` for a complete configuration:
+
+```js
+export default {
+  mcp: {
+    command: 'npx',
+    args: ['-y', 'libreoffice-calc-mcp'],
+    env: {
+      LIBREOFFICE_HOST: process.env.LIBREOFFICE_HOST || 'localhost',
+      LIBREOFFICE_PORT: process.env.LIBREOFFICE_PORT || '2002'
+    }
+  },
+  server: {
+    port: 8081,
+    host: '127.0.0.1'
+  },
+  oauthProvider: {
+    defaultSecret: process.env.OAUTH_CLIENT_SECRET || 'libre-secret-key-change-me',
+    tokenExpiration: 24 * 60 * 60 * 1000
+  }
+};
 ```
 
 ## Troubleshooting

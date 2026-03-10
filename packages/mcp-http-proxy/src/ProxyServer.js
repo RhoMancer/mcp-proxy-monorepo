@@ -13,6 +13,7 @@ import cookieParser from 'cookie-parser';
 import session from 'express-session';
 import dotenv from 'dotenv';
 import { OAuth2Auth } from './auth/OAuth2Auth.js';
+import { OAuthProviderAuth } from './auth/OAuthProviderAuth.js';
 
 dotenv.config();
 
@@ -50,18 +51,33 @@ export class ProxyServer {
     this.pendingRequests = new Map();
     this.isInitialized = false;
 
-    // OAuth 2.0 Authentication (optional)
+    // OAuth 2.0 Authentication (optional - for redirecting to GitHub, Google, etc.)
     this.auth = null;
     this.authEnabled = false;
+
+    // OAuth Provider mode (optional - for Claude Connectors)
+    this.oauthProvider = null;
+    this.oauthProviderEnabled = false;
 
     if (config.auth) {
       try {
         this.auth = new OAuth2Auth(config.auth);
         this.authEnabled = true;
-        console.log('✓ OAuth 2.0 authentication enabled');
+        console.log('✓ OAuth 2.0 authentication enabled (redirect mode)');
       } catch (error) {
         console.warn(`⚠ Failed to enable OAuth 2.0: ${error.message}`);
         console.warn('⚠ Running without authentication');
+      }
+    }
+
+    if (config.oauthProvider) {
+      try {
+        this.oauthProvider = new OAuthProviderAuth(config.oauthProvider);
+        this.oauthProviderEnabled = true;
+        console.log('✓ OAuth Provider mode enabled (Claude Connectors)');
+      } catch (error) {
+        console.warn(`⚠ Failed to enable OAuth Provider: ${error.message}`);
+        console.warn('⚠ Running without OAuth Provider');
       }
     }
 
@@ -90,7 +106,7 @@ export class ProxyServer {
       res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
       res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
       // Allow credentials for authenticated requests
-      if (this.authEnabled) {
+      if (this.authEnabled || this.oauthProviderEnabled) {
         res.setHeader('Access-Control-Allow-Credentials', 'true');
       }
       if (req.method === 'OPTIONS') {
@@ -112,6 +128,11 @@ export class ProxyServer {
       this.app.use('/auth', this.auth.getAuthRoutes());
     }
 
+    // OAuth Provider routes (if enabled - for Claude Connectors)
+    if (this.oauthProviderEnabled) {
+      this.app.use('/auth', this.oauthProvider.getAuthRoutes());
+    }
+
     // Health check endpoint (always public)
     this.app.get('/health', (req, res) => {
       res.json({
@@ -119,14 +140,18 @@ export class ProxyServer {
         mcpRunning: this.mcpProcess !== null,
         mcpInitialized: this.isInitialized,
         server: this.config.mcp?.command || 'unknown',
-        authEnabled: this.authEnabled
+        authEnabled: this.authEnabled,
+        oauthProviderEnabled: this.oauthProviderEnabled
       });
     });
 
     // Apply authentication middleware to protected routes (if enabled)
-    const protectedMiddleware = this.authEnabled
-      ? this.auth.getAuthenticateMiddleware()
-      : ((req, res, next) => next());
+    // OAuth Provider mode takes precedence over OAuth 2.0 redirect mode
+    const protectedMiddleware = this.oauthProviderEnabled
+      ? this.oauthProvider.getAuthenticateMiddleware()
+      : this.authEnabled
+        ? this.auth.getAuthenticateMiddleware()
+        : ((req, res, next) => next());
 
     // SSE endpoint for server-sent events
     this.app.get('/sse', protectedMiddleware, async (req, res) => {
@@ -385,23 +410,46 @@ export class ProxyServer {
       console.log(`║  MCP HTTP Proxy Server                                ║`);
       console.log(`╠═══════════════════════════════════════════════════════╣`);
       console.log(`║  Status: Running                                     ║`);
-      console.log(`║  Auth: ${this.authEnabled ? 'Enabled ' : 'Disabled'}${' '.repeat(18)}║`);
+
+      const authStatus = this.oauthProviderEnabled
+        ? 'OAuth Provider '
+        : this.authEnabled
+          ? 'OAuth 2.0     '
+          : 'Disabled      ';
+      console.log(`║  Auth: ${authStatus}${' '.repeat(18)}║`);
       console.log(`║  URL:    http://${this.HOST}:${this.PORT}                    ║`);
       console.log(`║  Health: http://${this.HOST}:${this.PORT}/health               ║`);
+
       if (this.authEnabled) {
         console.log(`║  Login:  http://${this.HOST}:${this.PORT}/auth/login           ║`);
       }
+      if (this.oauthProviderEnabled) {
+        console.log(`║  Token:  http://${this.HOST}:${this.PORT}/auth/token           ║`);
+      }
+
       console.log(`║  Tools:  http://${this.HOST}:${this.PORT}/tools                ║`);
       console.log(`║  SSE:    http://${this.HOST}:${this.PORT}/sse                  ║`);
       console.log(`╚═══════════════════════════════════════════════════════╝\n`);
-      if (this.authEnabled) {
-        console.log('Authentication is ENABLED. First login at:');
+
+      if (this.oauthProviderEnabled) {
+        console.log('✓ OAuth Provider mode enabled for Claude Connectors');
+        console.log('\nIn Claude web app, add a custom connector with:');
+        console.log(`  Name: Your Connector Name`);
+        console.log(`  Remote MCP server URL: http://${this.HOST}:${this.PORT}/message`);
+        console.log(`  OAuth Client ID: any-client-id`);
+        console.log(`  OAuth Client Secret: (use the secret from your config)\n`);
+      } else if (this.authEnabled) {
+        console.log('Authentication is ENABLED (OAuth 2.0 redirect mode).');
+        console.log('First login at:');
         console.log(`  http://${this.HOST}:${this.PORT}/auth/login\n`);
         console.log('Then enter this URL in Claude Connectors:');
       } else {
         console.log('Enter this URL in Claude Connectors:');
       }
-      console.log(`  http://${this.HOST}:${this.PORT}/message\n`);
+
+      if (!this.oauthProviderEnabled) {
+        console.log(`  http://${this.HOST}:${this.PORT}/message\n`);
+      }
       console.log('Press Ctrl+C to stop\n');
 
       // Pre-spawn MCP process
