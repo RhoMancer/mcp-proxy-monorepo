@@ -26,7 +26,8 @@ echo [1/2] Starting MCP Proxy (port 8082)...
 echo.
 
 REM Start the MCP HTTP Proxy in background (with explicit working directory)
-start "MCP Proxy" /d "%CD%" cmd /c "node src/cli.js --config examples/claude-connectors-hevy.config.js"
+REM Note: Running node directly (not via cmd /c) to preserve stdin for hevy-mcp
+start "MCP Proxy - Hevy Connector" /d "%CD%" node src/cli.js --config examples/claude-connectors-hevy.config.js
 
 REM Wait for proxy to start
 timeout /t 2 /nobreak > nul
