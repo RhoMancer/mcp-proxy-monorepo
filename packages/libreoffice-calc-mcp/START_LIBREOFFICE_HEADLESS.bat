@@ -1,33 +1,26 @@
 @echo off
 REM ========================================================================
-REM LibreOffice Calc MCP - Start LibreOffice Headless
+REM LibreOffice Calc MCP - Start LibreOffice Headless Only
 REM ========================================================================
 REM
-REM This script starts LibreOffice in headless socket mode only.
-REM The proxy server will NOT be started.
+REM This script starts ONLY LibreOffice in headless socket mode.
+REM Use this when you want to run the proxy separately.
 REM
-REM After running this, use START_LIBREOFFICE_PROXY.bat to start the proxy.
-REM Or use START_LIBREOFFICE_AND_PROXY.bat for both at once.
-REM
-REM LibreOffice will run on:
-REM - Host: localhost
-REM - Port: 2002
-REM - Protocol: socket
+REM For complete startup, use START_LIBREOFFICE_WITH_TUNNEL.bat
 REM
 REM ========================================================================
 
 echo.
 echo ========================================================================
-echo  Starting LibreOffice in Headless Socket Mode...
+echo  Starting LibreOffice (Headless Socket Mode)
 echo ========================================================================
 echo.
 echo   Host: localhost
 echo   Port: 2002
 echo.
 
-start /B "" "%~dp0..\..\..\Program Files\LibreOffice\program\soffice.exe" --accept="socket,host=localhost,port=2002;urp;StarOffice.ServiceManager" --headless --nodefault --nolockcheck
+start "" "C:\Program Files\LibreOffice\program\soffice.exe" --accept="socket,host=localhost,port=2002;urp;StarOffice.ServiceManager" --headless --nodefault --nolockcheck
 
-echo.
-echo LibreOffice started in headless mode.
-echo You can now start the proxy with START_LIBREOFFICE_PROXY.bat
-echo.
+echo LibreOffice starting...
+echo Wait 5 seconds for socket to be ready, then run proxy.
+timeout /t 5 /nobreak >nul

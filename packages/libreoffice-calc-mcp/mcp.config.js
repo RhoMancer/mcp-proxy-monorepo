@@ -43,5 +43,19 @@ export default {
   server: {
     port: parseInt(process.env.MCP_PROXY_PORT) || 8081,
     host: process.env.MCP_PROXY_HOST || '127.0.0.1'
+  },
+  // Cloudflare tunnel for external HTTPS access
+  tunnel: {
+    domain: 'libreoffice-calc-mcp.angussoftware.dev',
+    tunnelId: '8d14ea92-a9f8-476e-bd3b-a9648cb7b4bf'
+  },
+  // OAuth Provider mode for Claude Connectors
+  oauthProvider: {
+    // Simple mode: Use a shared secret for all clients
+    // Enter this exact secret in Claude Connectors OAuth Client Secret field
+    defaultSecret: process.env.OAUTH_CLIENT_SECRET || 'libreoffice-secret-key-change-me',
+
+    // Token expiration (default: 24 hours)
+    tokenExpiration: 24 * 60 * 60 * 1000
   }
 };
