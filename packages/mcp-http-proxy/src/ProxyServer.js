@@ -275,27 +275,88 @@ export class ProxyServer {
         ? this.auth.getAuthenticateMiddleware()
         : ((req, res, next) => next());
 
-    // SSE endpoint for server-sent events
-    this.app.get('/sse', protectedMiddleware, async (req, res) => {
+    // SSE endpoint at root path for MCP HTTP transport spec compliance
+    // According to the spec, clients GET the base URL and expect an SSE stream
+    // that sends an "endpoint" event pointing to the message endpoint
+    this.app.get('/', protectedMiddleware, async (req, res) => {
+      const requestId = crypto.randomBytes(8).toString('hex');
+      console.log(`[ROOT-SSE ${requestId}] Connection established from`, req.ip, req.headers['user-agent']);
+
       res.setHeader('Content-Type', 'text/event-stream');
       res.setHeader('Cache-Control', 'no-cache');
       res.setHeader('Connection', 'keep-alive');
 
+      const endpointUrl = `${req.protocol}://${req.get('host')}/message`;
+      console.log(`[ROOT-SSE ${requestId}] Sending endpoint event:`, endpointUrl);
+
       res.write('event: endpoint\n');
-      res.write(`data: ${req.protocol}://${req.get('host')}/message\n\n`);
+      res.write(`data: ${endpointUrl}\n\n`);
       // Flush immediately to send the endpoint event to the client
       if (typeof res.flush === 'function') {
         res.flush();
       }
 
       const keepAlive = setInterval(() => {
-        res.write(': keep-alive\n\n');
-        if (typeof res.flush === 'function') {
-          res.flush();
+        try {
+          res.write(': keep-alive\n\n');
+          if (typeof res.flush === 'function') {
+            res.flush();
+          }
+        } catch (err) {
+          console.log(`[ROOT-SSE ${requestId}] Keep-alive error:`, err.message);
+          clearInterval(keepAlive);
         }
       }, 15000);
 
       req.on('close', () => {
+        console.log(`[ROOT-SSE ${requestId}] Connection closed`);
+        clearInterval(keepAlive);
+      });
+
+      req.on('error', (err) => {
+        console.error(`[ROOT-SSE ${requestId}] Connection error:`, err.message);
+        clearInterval(keepAlive);
+      });
+    });
+
+    // SSE endpoint for server-sent events (alternate path)
+    this.app.get('/sse', protectedMiddleware, async (req, res) => {
+      const requestId = crypto.randomBytes(8).toString('hex');
+      console.log(`[SSE ${requestId}] Connection established from`, req.ip, req.headers['user-agent']);
+
+      res.setHeader('Content-Type', 'text/event-stream');
+      res.setHeader('Cache-Control', 'no-cache');
+      res.setHeader('Connection', 'keep-alive');
+
+      const endpointUrl = `${req.protocol}://${req.get('host')}/message`;
+      console.log(`[SSE ${requestId}] Sending endpoint event:`, endpointUrl);
+
+      res.write('event: endpoint\n');
+      res.write(`data: ${endpointUrl}\n\n`);
+      // Flush immediately to send the endpoint event to the client
+      if (typeof res.flush === 'function') {
+        res.flush();
+      }
+
+      const keepAlive = setInterval(() => {
+        try {
+          res.write(': keep-alive\n\n');
+          if (typeof res.flush === 'function') {
+            res.flush();
+          }
+        } catch (err) {
+          console.log(`[SSE ${requestId}] Keep-alive error:`, err.message);
+          clearInterval(keepAlive);
+        }
+      }, 15000);
+
+      req.on('close', () => {
+        console.log(`[SSE ${requestId}] Connection closed`);
+        clearInterval(keepAlive);
+      });
+
+      req.on('error', (err) => {
+        console.error(`[SSE ${requestId}] Connection error:`, err.message);
         clearInterval(keepAlive);
       });
     });
@@ -372,12 +433,14 @@ export class ProxyServer {
    * @private
    */
   async _handleJsonRpcRequest(req, res) {
-    console.log('=== INCOMING REQUEST on', req.path, '===');
-    console.log('Headers:', JSON.stringify(req.headers, null, 2));
-    console.log('Body:', JSON.stringify(req.body, null, 2));
+    const requestId = crypto.randomBytes(8).toString('hex');
+    console.log(`[MESSAGE ${requestId}] === INCOMING REQUEST on`, req.path, '===');
+    console.log(`[MESSAGE ${requestId}] From:`, req.ip, 'User-Agent:', req.headers['user-agent']);
+    console.log(`[MESSAGE ${requestId}] Body:`, JSON.stringify(req.body, null, 2));
 
     // Ensure MCP process is running and initialized
     if (!this.mcpProcess) {
+      console.log(`[MESSAGE ${requestId}] Spawning MCP process...`);
       this._spawnMcpProcess();
       await this._initializeMcp();
     }
@@ -386,7 +449,7 @@ export class ProxyServer {
       const { method, params, id } = req.body;
 
       if (!method) {
-        console.log('ERROR: Missing method in request');
+        console.log(`[MESSAGE ${requestId}] ERROR: Missing method in request`);
         return res.status(400).json({
           jsonrpc: '2.0',
           error: {
@@ -397,16 +460,16 @@ export class ProxyServer {
         });
       }
 
-      console.log('Forwarding to MCP:', method, 'ID:', id);
+      console.log(`[MESSAGE ${requestId}] Forwarding to MCP:`, method, 'ID:', id);
 
       // Forward request to MCP process with original ID
       const response = await this._sendMcpRequest(method, params, id);
 
-      console.log('MCP Response:', JSON.stringify(response).substring(0, 200) + '...');
+      console.log(`[MESSAGE ${requestId}] MCP Response:`, JSON.stringify(response).substring(0, 200) + '...');
       res.json(response);
 
     } catch (error) {
-      console.error('Error handling request:', error);
+      console.error(`[MESSAGE ${requestId}] Error handling request:`, error);
       const classified = this._classifyError(error);
       res.status(500).json({
         jsonrpc: '2.0',
