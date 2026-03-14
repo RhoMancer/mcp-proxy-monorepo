@@ -70,3 +70,4 @@ __pycache__/
 # Test coverage reports (generated artifacts)
 coverage/
 **/coverage/
+/.planning/
