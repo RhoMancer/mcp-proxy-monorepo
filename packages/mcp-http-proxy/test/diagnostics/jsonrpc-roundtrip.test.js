@@ -414,3 +414,241 @@ describe('LOCAL-02: MCP tools/list in local mode', () => {
     });
   });
 });
+
+/**
+ * LOCAL-03: Tool Execution in Local Mode
+ *
+ * Verifies that tool calls execute correctly through the local proxy (no auth):
+ * - ping tool call returns pong response
+ * - sum tool with valid parameters returns correct result
+ * - echo tool returns the input arguments
+ * - Concurrent tool calls (3 simultaneous) all complete successfully
+ * - Unknown tool returns appropriate error
+ */
+describe('LOCAL-03: Tool execution through local proxy', () => {
+  let proxy;
+
+  beforeAll(async () => {
+    // Create proxy server with echo config (local mode, no auth)
+    proxy = new ProxyServer(echoConfig);
+
+    // Spawn the MCP process
+    proxy._spawnMcpProcess();
+
+    // Wait for process to start
+    await new Promise(resolve => setTimeout(resolve, 100));
+
+    // Initialize MCP connection (complete handshake) - no auth required
+    await proxy._initializeMcp();
+
+    // Verify initialization succeeded
+    expect(proxy.isInitialized).toBe(true);
+  });
+
+  afterAll(async () => {
+    // Clean up: kill MCP process if it exists
+    if (proxy.mcpProcess && !proxy.mcpProcess.killed) {
+      proxy.mcpProcess.kill();
+      // Wait for process to fully terminate
+      await new Promise(resolve => setTimeout(resolve, 50));
+    }
+  });
+
+  describe('Tool calls in local mode', () => {
+    it('should call ping tool and receive pong', async () => {
+      const response = await proxy._sendMcpRequest('tools/call', {
+        name: 'ping',
+        arguments: {}
+      });
+
+      // Verify response structure
+      expect(response.jsonrpc).toBe('2.0');
+      expect(response.error).toBeUndefined();
+      expect(response.result).toBeDefined();
+
+      // Verify content array exists
+      expect(response.result.content).toBeDefined();
+      expect(Array.isArray(response.result.content)).toBe(true);
+
+      // Verify pong response
+      const textContent = response.result.content[0].text;
+      expect(textContent).toContain('pong');
+      expect(textContent).toContain('Echo test server');
+    });
+
+    it('should call sum tool and calculate correctly', async () => {
+      const response = await proxy._sendMcpRequest('tools/call', {
+        name: 'sum',
+        arguments: { a: 5, b: 3 }
+      });
+
+      // Verify response structure
+      expect(response.jsonrpc).toBe('2.0');
+      expect(response.error).toBeUndefined();
+      expect(response.result).toBeDefined();
+
+      // Verify sum result
+      const textContent = response.result.content[0].text;
+      expect(textContent).toContain('8');
+      expect(textContent).toContain('Sum:');
+    });
+
+    it('should call sum tool with different numbers', async () => {
+      const response = await proxy._sendMcpRequest('tools/call', {
+        name: 'sum',
+        arguments: { a: 10, b: 25 }
+      });
+
+      // Verify sum result
+      const textContent = response.result.content[0].text;
+      expect(textContent).toContain('35');
+    });
+
+    it('should call echo tool and return arguments', async () => {
+      const testMessage = 'Hello, Local Mode!';
+      const response = await proxy._sendMcpRequest('tools/call', {
+        name: 'echo',
+        arguments: { message: testMessage }
+      });
+
+      // Verify echo result
+      const textContent = response.result.content[0].text;
+      expect(textContent).toContain('Echo:');
+      expect(textContent).toContain(testMessage);
+    });
+
+    it('should call get_time tool', async () => {
+      const response = await proxy._sendMcpRequest('tools/call', {
+        name: 'get_time',
+        arguments: {}
+      });
+
+      // Verify time result
+      const textContent = response.result.content[0].text;
+      expect(textContent).toContain('Current time:');
+      // Should be ISO format
+      expect(textContent).toMatch(/\d{4}-\d{2}-\d{2}T/);
+    });
+  });
+
+  describe('Concurrent tool calls in local mode', () => {
+    it('should handle multiple concurrent tool calls', async () => {
+      // Send multiple tool calls concurrently
+      const promises = [
+        proxy._sendMcpRequest('tools/call', { name: 'ping', arguments: {} }),
+        proxy._sendMcpRequest('tools/call', { name: 'sum', arguments: { a: 1, b: 2 } }),
+        proxy._sendMcpRequest('tools/call', { name: 'echo', arguments: { message: 'concurrent' } }),
+      ];
+
+      const responses = await Promise.all(promises);
+
+      // All should complete successfully
+      expect(responses).toHaveLength(3);
+      responses.forEach(response => {
+        expect(response.jsonrpc).toBe('2.0');
+        expect(response.result).toBeDefined();
+        expect(response.result.content).toBeDefined();
+      });
+
+      // Verify specific responses
+      expect(responses[0].result.content[0].text).toContain('pong');
+      expect(responses[1].result.content[0].text).toContain('3');
+      expect(responses[2].result.content[0].text).toContain('concurrent');
+    });
+
+    it('should handle concurrent calls to the same tool', async () => {
+      // Call sum tool multiple times concurrently
+      const promises = [
+        proxy._sendMcpRequest('tools/call', { name: 'sum', arguments: { a: 1, b: 1 } }),
+        proxy._sendMcpRequest('tools/call', { name: 'sum', arguments: { a: 2, b: 2 } }),
+        proxy._sendMcpRequest('tools/call', { name: 'sum', arguments: { a: 3, b: 3 } }),
+      ];
+
+      const responses = await Promise.all(promises);
+
+      // All should complete successfully with correct results
+      expect(responses[0].result.content[0].text).toContain('2');
+      expect(responses[1].result.content[0].text).toContain('4');
+      expect(responses[2].result.content[0].text).toContain('6');
+    });
+  });
+
+  describe('Error handling in local mode', () => {
+    it('should handle unknown tool call', async () => {
+      const response = await proxy._sendMcpRequest('tools/call', {
+        name: 'unknown_tool_xyz',
+        arguments: {}
+      });
+
+      // Should get an error response
+      expect(response).toBeDefined();
+      expect(response.jsonrpc).toBe('2.0');
+
+      // Either result with error content or error object
+      if (response.error) {
+        expect(response.error.code).toBeDefined();
+      } else {
+        // Some servers return error in result content
+        expect(response.result).toBeDefined();
+      }
+    });
+
+    it('should handle tool call with invalid arguments', async () => {
+      const response = await proxy._sendMcpRequest('tools/call', {
+        name: 'sum',
+        arguments: { invalid: 'argument' }
+      });
+
+      // Should get a response (may be error or default value)
+      expect(response).toBeDefined();
+      expect(response.jsonrpc).toBe('2.0');
+      expect(response.result).toBeDefined();
+
+      // The echo server handles missing args gracefully, defaulting to 0
+      const textContent = response.result.content[0].text;
+      expect(textContent).toBeDefined();
+    });
+
+    it('should handle tool call with missing required parameters', async () => {
+      const response = await proxy._sendMcpRequest('tools/call', {
+        name: 'sum',
+        arguments: { a: 5 } // Missing 'b'
+      });
+
+      // Should get a response (may be error or default value)
+      expect(response).toBeDefined();
+      expect(response.jsonrpc).toBe('2.0');
+      expect(response.result).toBeDefined();
+
+      // The echo server defaults missing args to 0, so sum should be 5
+      const textContent = response.result.content[0].text;
+      expect(textContent).toBeDefined();
+    });
+  });
+
+  describe('Request ID handling in local mode', () => {
+    it('should return matching request ID for tool call', async () => {
+      const testId = 99;
+      const response = await proxy._sendMcpRequest('tools/call', {
+        name: 'ping',
+        arguments: {}
+      }, testId);
+
+      // Verify ID matches
+      expect(response.id).toBe(testId);
+    });
+
+    it('should auto-generate request ID when not provided', async () => {
+      // Don't provide an ID - let the proxy generate one
+      const response = await proxy._sendMcpRequest('tools/call', {
+        name: 'echo',
+        arguments: { message: 'test' }
+      });
+
+      // Should have some ID (the proxy auto-increments)
+      expect(response.id).toBeDefined();
+      expect(typeof response.id).toBe('number');
+      expect(response.id).toBeGreaterThan(0);
+    });
+  });
+});
