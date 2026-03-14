@@ -29,6 +29,55 @@ A generic HTTP-to-stdio proxy for any [MCP (Model Context Protocol)](https://mod
 
 ## Quick Start
 
+### Local Development Mode
+
+**Use local mode when developing with Claude Code CLI on your machine.** No authentication required.
+
+**Quick setup:**
+
+1. Create a config file that omits the `auth` and `oauthProvider` keys:
+
+```js
+// local.config.js
+export default {
+  mcp: {
+    command: 'npx',
+    args: ['-y', 'your-mcp-server']
+  },
+  server: {
+    port: 8080,
+    host: '127.0.0.1'
+  }
+  // NO auth or oauthProvider keys = local mode
+};
+```
+
+2. Start the proxy:
+```bash
+node src/cli.js -c path/to/local.config.js
+```
+
+3. Configure Claude Code (`.claude/config.json`):
+```json
+{
+  "mcpServers": {
+    "my-server": {
+      "url": "http://localhost:8080/sse"
+    }
+  }
+}
+```
+
+**Local vs. OAuth Modes:**
+
+| Mode | Config Keys | Use Case | Authentication |
+|------|-------------|----------|----------------|
+| **Local** | (none) | Claude Code CLI development | None |
+| **OAuth 2.0** | `auth` | Personal use with OAuth providers | GitHub/Google/etc |
+| **OAuth Provider** | `oauthProvider` | Claude.ai Connectors (tunnel) | PKCE/Client Credentials |
+
+**Example config:** See [examples/local-only.config.js](examples/local-only.config.js) for a complete template.
+
 ### Installation
 
 ```bash
@@ -241,6 +290,14 @@ export default {
 ```
 
 ## Examples
+
+### Local Mode (No Auth)
+
+**For Claude Code CLI development:**
+
+- [local-only.config.js](examples/local-only.config.js) - Generic template for local Claude Code development
+- [hevy-local.config.js](examples/hevy-local.config.js) - Hevy workout tracker MCP server
+- [libreoffice-local.config.js](examples/libreoffice-local.config.js) - LibreOffice Calc MCP server
 
 ### hevy-mcp
 
