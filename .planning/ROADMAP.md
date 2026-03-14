@@ -9,7 +9,7 @@
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Diagnostics | 4/4 | Complete | [01-00](.planning/phases/01-diagnostics/01-00-SUMMARY.md) - Test Stubs, [01-01](.planning/phases/01-diagnostics/01-01-SUMMARY.md) - Test Infrastructure, [01-02](.planning/phases/01-diagnostics/01-02-SUMMARY.md) - Diagnostic Test Files, [01-03](.planning/phases/01-diagnostics/01-03-SUMMARY.md) - NPM Script |
-| 2. Local Access | 1/3 | In Progress|  |
+| 2. Local Access | 1/3 | In Progress| [02-01](.planning/phases/02-local-access/02-01-SUMMARY.md) - Local Mode Verification |
 | 3. Tunnel Validation | 0/1 | Not started | - |
 
 ## Phases
