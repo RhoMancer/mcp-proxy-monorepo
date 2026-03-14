@@ -75,6 +75,21 @@ The fix was verified with:
 
 3. **All 20 Hevy tools accessible** via `/message` endpoint
 
+### Live Verification (End-to-End)
+
+**Date:** 2026-03-14
+**Context:** Claude Code CLI session
+
+After applying the root path SSE fix, Claude Code CLI successfully:
+- Discovered the Hevy MCP server via HTTP transport
+- Connected to the proxy at `http://127.0.0.1:8083`
+- Loaded all 20 Hevy tools (exercise templates, workouts, routines, folders)
+- Demonstrated tool functionality (Claude gained access to Hevy MCP tools)
+
+**Evidence:** This Claude Code session has active access to Hevy MCP tools, confirming the fix resolved the connectivity issue completely.
+
+**Verification method:** Direct conversation - user confirmed that Claude can now "see and use" Hevy tools, which was not possible before the fix.
+
 ## Deviations from Plan
 
 None - this was a quick fix task executed exactly as needed.
@@ -93,10 +108,27 @@ None - this was a quick fix task executed exactly as needed.
   - Enhanced lines 322-362: Improved `/sse` endpoint with better logging
   - Enhanced lines 435-483: Added request ID logging to JSON-RPC handler
 
-## Commit
+## Commits
 
+### Primary Fix
 - **Hash:** `9087c64`
 - **Message:** `fix(quick-1): add root path SSE endpoint for MCP HTTP transport spec compliance`
+- **Date:** 2026-03-14 15:33:02
+
+### Documentation
+- **Hash:** `f7d1f02`
+- **Message:** `docs(quick-1): complete root path SSE endpoint fix summary`
+- **Date:** 2026-03-14 15:34:30
+
+### Related Setup (later commit)
+- **Hash:** `39181e9`
+- **Message:** `feat: add local CLI configurations & utilities for LibreOffice and Hevy MCP servers`
+- **Date:** 2026-03-14 15:46:09
+- **Files:**
+  - `hevy-local.config.js` - Example local config (no OAuth)
+  - `start-hevy-proxy.bat` - Convenience script
+  - `START_LIBREOFFICE_HEADLESS.bat` - LibreOffice helper
+  - `libreoffice-local.config.js` - LibreOffice example config
 
 ## Impact
 
