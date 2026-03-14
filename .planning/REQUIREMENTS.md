@@ -25,7 +25,7 @@ Requirements for initial fix. Each maps to roadmap phases.
 
 - [ ] **CONFIG-01**: Proxy can run in "local mode" without OAuth requirements
 - [ ] **CONFIG-02**: CORS settings allow localhost connections
-- [ ] **CONFIG-03**: Example config provided for Claude Code local development
+- [x] **CONFIG-03**: Example config provided for Claude Code local development
 
 ### Claude.ai Tunneling
 
@@ -75,7 +75,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | LOCAL-04 | Phase 2 | Complete |
 | CONFIG-01 | Phase 2 | Pending |
 | CONFIG-02 | Phase 2 | Pending |
-| CONFIG-03 | Phase 2 | Pending |
+| CONFIG-03 | Phase 2 | Complete |
 | TUNNEL-01 | Phase 3 | Pending |
 | TUNNEL-02 | Phase 3 | Pending |
 | TUNNEL-03 | Phase 3 | Pending |
