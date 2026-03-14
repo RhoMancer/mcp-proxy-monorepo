@@ -19,17 +19,21 @@
  *   - Suitable for testing proxy functionality without authentication
  */
 
+import { resolve, dirname } from 'path';
+import { fileURLToPath } from 'url';
+
+// Get absolute path to the fixtures directory
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+// Resolve absolute path to echo server (works regardless of CWD)
+const echoServerPath = resolve(__dirname, '../../../examples/test-server/echo-mcp-server.js');
+
 export default {
   mcp: {
-    // Path from fixtures directory to echo test server
-    // fixtures is at test/diagnostics/fixtures/
-    // examples is at packages/mcp-http-proxy/examples/
+    // Use absolute path to avoid spawn working directory issues
     command: 'node',
-    args: [
-      // Relative path from fixtures location to the echo MCP server
-      // Going up 4 levels: test/diagnostics/fixtures -> test/diagnostics -> test -> packages/mcp-http-proxy
-      '../../../examples/test-server/echo-mcp-server.js'
-    ],
+    args: [echoServerPath],
     env: {
       NODE_ENV: 'test',
     },
