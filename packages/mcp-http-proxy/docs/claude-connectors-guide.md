@@ -22,6 +22,16 @@ Claude Connectors allows you to connect Claude to custom MCP servers. The mcp-pr
 
 For Claude Connectors, **OAuth Provider mode** is recommended as it provides secure authentication without requiring user login redirects.
 
+> **Note: Local vs Tunnel Mode**
+>
+> This guide is for **OAuth Provider mode (tunnel access)** when using Claude.ai Connectors with external HTTPS access via Cloudflare Tunnel.
+>
+> If you're using **Claude Code CLI** for local development, you should use **Local Mode (no auth)** instead. See the main [README](../README.md#local-development-mode) for the Local Development Mode quick start.
+>
+> **Key differences:**
+> - **Local Mode**: No authentication, localhost only, for Claude Code CLI
+> - **Tunnel Mode (OAuth Provider)**: Client credentials authentication, external HTTPS access, for Claude.ai Connectors
+
 ## OAuth Provider Mode
 
 OAuth Provider mode enables your mcp-proxy to validate OAuth client credentials and issue JWT access tokens. Claude Connectors will:
@@ -31,6 +41,13 @@ OAuth Provider mode enables your mcp-proxy to validate OAuth client credentials 
 3. Include the token in subsequent requests via `Authorization: Bearer` header
 
 ### Quick Setup
+
+**Before you start: Decide if you need tunnel access**
+
+- **Using Claude.ai Connectors (web app)**: You're in the right place — follow this guide for OAuth Provider mode
+- **Using Claude Code CLI (local development)**: Use Local Mode instead — see [README Local Development Mode](../README.md#local-development-mode) for simpler setup without authentication
+
+---
 
 1. **Generate a secure OAuth client secret**:
    ```bash
@@ -80,6 +97,62 @@ OAuth Provider mode enables your mcp-proxy to validate OAuth client credentials 
      - **Remote MCP server URL**: `http://127.0.0.1:8080/message`
      - **OAuth Client ID**: Any identifier (e.g., "claude-client")
      - **OAuth Client Secret**: Must match your `OAUTH_CLIENT_SECRET` value from `.env`
+
+### Tunnel vs Local Configuration Comparison
+
+**LOCAL MODE (Claude Code CLI)** — No authentication, localhost only:
+
+```js
+// local.config.js
+export default {
+  mcp: {
+    command: 'npx',
+    args: ['-y', 'your-mcp-server'],
+    env: {
+      API_KEY: process.env.YOUR_API_KEY
+    }
+  },
+  server: {
+    port: 8080,
+    host: '127.0.0.1'
+  }
+  // NO auth, NO oauthProvider, NO tunnel
+};
+```
+
+**TUNNEL MODE (Claude.ai Connectors)** — OAuth Provider authentication, external HTTPS:
+
+```js
+// tunnel.config.js
+export default {
+  mcp: {
+    command: 'npx',
+    args: ['-y', 'your-mcp-server'],
+    env: {
+      API_KEY: process.env.YOUR_API_KEY
+    }
+  },
+  server: {
+    port: 8080,
+    host: '127.0.0.1'
+  },
+  tunnel: {
+    domain: 'your-domain.dev',
+    tunnelId: 'your-tunnel-id'
+  },
+  oauthProvider: {
+    defaultSecret: process.env.OAUTH_CLIENT_SECRET
+  }
+};
+```
+
+**Key differences:**
+| Aspect | Local Mode | Tunnel Mode |
+|--------|------------|-------------|
+| Authentication | None | OAuth Provider |
+| Access | localhost only | External via HTTPS |
+| Use case | Claude Code CLI | Claude.ai Connectors |
+| Tunnel required | No | Yes (Cloudflare Tunnel) |
 
 ## Configuration Examples
 
