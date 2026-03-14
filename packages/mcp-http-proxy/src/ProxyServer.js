@@ -283,9 +283,16 @@ export class ProxyServer {
 
       res.write('event: endpoint\n');
       res.write(`data: ${req.protocol}://${req.get('host')}/message\n\n`);
+      // Flush immediately to send the endpoint event to the client
+      if (typeof res.flush === 'function') {
+        res.flush();
+      }
 
       const keepAlive = setInterval(() => {
         res.write(': keep-alive\n\n');
+        if (typeof res.flush === 'function') {
+          res.flush();
+        }
       }, 15000);
 
       req.on('close', () => {
@@ -313,6 +320,54 @@ export class ProxyServer {
   }
 
   /**
+   * Classify errors into specific MCP error codes with actionable messages
+   * @private
+   * @param {Error} error - The error to classify
+   * @returns {Object} Object containing error code and message
+   */
+  _classifyError(error) {
+    const errorMessage = error.message || error.toString();
+
+    // Check for timeout errors
+    if (errorMessage.includes('timeout') || errorMessage.includes('Timeout')) {
+      return {
+        code: -32000,
+        message: 'Request timeout: MCP server did not respond within 30 seconds. Next steps: Check if MCP process is running, verify server logs for errors, confirm MCP server is not blocked by firewall.'
+      };
+    }
+
+    // Check for process termination errors
+    if (errorMessage.includes('terminated') || errorMessage.includes('exited')) {
+      return {
+        code: -32001,
+        message: 'MCP process terminated: The underlying MCP server process exited unexpectedly. Next steps: Check MCP server configuration, verify required environment variables are set, review MCP server logs for crash details.'
+      };
+    }
+
+    // Check for process not available errors
+    if (errorMessage.includes('not available') || errorMessage.includes('stdin')) {
+      return {
+        code: -32002,
+        message: 'MCP process not available: The MCP server process failed to start or its stdin is not accessible. Next steps: Verify MCP server command and arguments, check if required dependencies are installed, confirm command path is correct.'
+      };
+    }
+
+    // Check for initialization errors
+    if (errorMessage.includes('Initialize failed')) {
+      return {
+        code: -32003,
+        message: `MCP initialization failed: ${errorMessage}. Next steps: Verify MCP server protocol compatibility, check if server supports protocol version 2024-11-05, review server configuration.`
+      };
+    }
+
+    // Default internal error with original message
+    return {
+      code: -32603,
+      message: `Internal error: ${errorMessage}. Next steps: Check proxy server logs for details, verify MCP server is running, confirm request format is valid.`
+    };
+  }
+
+  /**
    * Handle JSON-RPC requests
    * @private
    */
@@ -336,7 +391,7 @@ export class ProxyServer {
           jsonrpc: '2.0',
           error: {
             code: -32600,
-            message: 'Invalid Request: missing method'
+            message: 'Invalid Request: missing method. Next steps: Verify request body contains valid JSON-RPC method field, check request format matches JSON-RPC 2.0 specification.'
           },
           id: null
         });
@@ -352,11 +407,13 @@ export class ProxyServer {
 
     } catch (error) {
       console.error('Error handling request:', error);
+      const classified = this._classifyError(error);
       res.status(500).json({
         jsonrpc: '2.0',
         error: {
-          code: -32603,
-          message: error.message
+          code: classified.code,
+          message: classified.message,
+          data: error.stack // Include stack for debugging
         },
         id: req.body.id || null
       });
