@@ -257,3 +257,160 @@ describe('DIAG-03: JSON-RPC Round-Trip', () => {
     });
   });
 });
+
+/**
+ * LOCAL-02: MCP tools/list in Local Mode
+ *
+ * Verifies that MCP server discovery works correctly in local mode (no auth):
+ * - Initialize handshake completes without authentication
+ * - tools/list returns expected tool array
+ * - Each tool has required fields (name, description, inputSchema)
+ * - Response JSON-RPC structure is correct (jsonrpc: "2.0", result, id)
+ */
+describe('LOCAL-02: MCP tools/list in local mode', () => {
+  let proxy;
+
+  beforeAll(async () => {
+    // Create proxy server with echo config (local mode, no auth)
+    proxy = new ProxyServer(echoConfig);
+
+    // Spawn the MCP process
+    proxy._spawnMcpProcess();
+
+    // Wait for process to start
+    await new Promise(resolve => setTimeout(resolve, 100));
+
+    // Initialize MCP connection (complete handshake) - no auth required
+    await proxy._initializeMcp();
+
+    // Verify initialization succeeded
+    expect(proxy.isInitialized).toBe(true);
+  });
+
+  afterAll(async () => {
+    // Clean up: kill MCP process if it exists
+    if (proxy.mcpProcess && !proxy.mcpProcess.killed) {
+      proxy.mcpProcess.kill();
+      // Wait for process to fully terminate
+      await new Promise(resolve => setTimeout(resolve, 50));
+    }
+  });
+
+  describe('Initialize handshake without authentication', () => {
+    it('should complete initialize handshake in local mode', () => {
+      // The _initializeMcp() was called in beforeAll without any auth
+      expect(proxy.isInitialized).toBe(true);
+    });
+
+    it('should have authEnabled and oauthProviderEnabled set to false', () => {
+      // Verify proxy is in local mode
+      expect(proxy.authEnabled).toBe(false);
+      expect(proxy.oauthProviderEnabled).toBe(false);
+    });
+
+    it('should have a running MCP process', () => {
+      expect(proxy.mcpProcess).toBeDefined();
+      expect(proxy.mcpProcess.pid).toBeGreaterThan(0);
+      expect(proxy.mcpProcess.killed).toBe(false);
+    });
+  });
+
+  describe('tools/list response structure', () => {
+    it('should return valid JSON-RPC response', async () => {
+      const response = await proxy._sendMcpRequest('tools/list', {});
+
+      // Verify JSON-RPC 2.0 structure
+      expect(response).toBeDefined();
+      expect(response.jsonrpc).toBe('2.0');
+      expect(response.id).toBeDefined();
+      expect(typeof response.id).toBe('number');
+    });
+
+    it('should return result object (not error)', async () => {
+      const response = await proxy._sendMcpRequest('tools/list', {});
+
+      // Verify we got a result (not an error)
+      expect(response.error).toBeUndefined();
+      expect(response.result).toBeDefined();
+    });
+  });
+
+  describe('tools/list returns valid tool array', () => {
+    it('should return tools array', async () => {
+      const response = await proxy._sendMcpRequest('tools/list', {});
+
+      // Verify tools array exists
+      expect(response.result.tools).toBeDefined();
+      expect(Array.isArray(response.result.tools)).toBe(true);
+      expect(response.result.tools.length).toBeGreaterThan(0);
+    });
+
+    it('should return expected tools from echo server', async () => {
+      const response = await proxy._sendMcpRequest('tools/list', {});
+
+      // Verify expected tools are present
+      const toolNames = response.result.tools.map(t => t.name);
+      expect(toolNames).toContain('echo');
+      expect(toolNames).toContain('ping');
+      expect(toolNames).toContain('sum');
+      expect(toolNames).toContain('get_time');
+    });
+
+    it('should include tool metadata for each tool', async () => {
+      const response = await proxy._sendMcpRequest('tools/list', {});
+
+      // Verify all tools have required fields
+      response.result.tools.forEach(tool => {
+        expect(tool.name).toBeDefined();
+        expect(typeof tool.name).toBe('string');
+        expect(tool.description).toBeDefined();
+        expect(typeof tool.description).toBe('string');
+      });
+    });
+  });
+
+  describe('tool inputSchema validation', () => {
+    it('should include inputSchema for tools that accept arguments', async () => {
+      const response = await proxy._sendMcpRequest('tools/list', {});
+
+      // Check sum tool has proper inputSchema
+      const sumTool = response.result.tools.find(t => t.name === 'sum');
+      expect(sumTool).toBeDefined();
+      expect(sumTool.inputSchema).toBeDefined();
+      expect(typeof sumTool.inputSchema).toBe('object');
+    });
+
+    it('should include properties in inputSchema', async () => {
+      const response = await proxy._sendMcpRequest('tools/list', {});
+
+      // Verify sum tool inputSchema has expected properties
+      const sumTool = response.result.tools.find(t => t.name === 'sum');
+      expect(sumTool.inputSchema.properties).toBeDefined();
+      expect(sumTool.inputSchema.properties.a).toBeDefined();
+      expect(sumTool.inputSchema.properties.b).toBeDefined();
+    });
+
+    it('should have correct JSON Schema structure', async () => {
+      const response = await proxy._sendMcpRequest('tools/list', {});
+
+      // Verify inputSchema follows JSON Schema format
+      const sumTool = response.result.tools.find(t => t.name === 'sum');
+      expect(sumTool.inputSchema.type).toBeDefined();
+      expect(sumTool.inputSchema).toHaveProperty('type');
+    });
+  });
+
+  describe('tools/list idempotency', () => {
+    it('should return consistent results on multiple calls', async () => {
+      // Call tools/list multiple times
+      const response1 = await proxy._sendMcpRequest('tools/list', {});
+      const response2 = await proxy._sendMcpRequest('tools/list', {});
+
+      // Should return same tools
+      const tools1 = response1.result.tools.map(t => t.name).sort();
+      const tools2 = response2.result.tools.map(t => t.name).sort();
+
+      expect(tools1).toEqual(tools2);
+    });
+  });
+});
