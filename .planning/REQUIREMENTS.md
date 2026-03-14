@@ -31,7 +31,7 @@ Requirements for initial fix. Each maps to roadmap phases.
 
 - [x] **TUNNEL-01**: Existing Cloudflare Tunnel setup continues to work
 - [x] **TUNNEL-02**: OAuth provider mode works for external Claude.ai access
-- [ ] **TUNNEL-03**: Documentation clarifies tunnel vs local access differences
+- [x] **TUNNEL-03**: Documentation clarifies tunnel vs local access differences
 
 ## v2 Requirements
 
@@ -78,7 +78,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | CONFIG-03 | Phase 2 | Complete |
 | TUNNEL-01 | Phase 3 | Complete |
 | TUNNEL-02 | Phase 3 | Complete |
-| TUNNEL-03 | Phase 3 | Pending |
+| TUNNEL-03 | Phase 3 | Complete |
 
 **Coverage:**
 - v1 requirements: 15 total

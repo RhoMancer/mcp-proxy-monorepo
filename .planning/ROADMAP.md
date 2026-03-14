@@ -10,13 +10,13 @@
 |-------|----------------|--------|-----------|
 | 1. Diagnostics | 4/4 | Complete | [01-00](.planning/phases/01-diagnostics/01-00-SUMMARY.md) - Test Stubs, [01-01](.planning/phases/01-diagnostics/01-01-SUMMARY.md) - Test Infrastructure, [01-02](.planning/phases/01-diagnostics/01-02-SUMMARY.md) - Diagnostic Test Files, [01-03](.planning/phases/01-diagnostics/01-03-SUMMARY.md) - NPM Script |
 | 2. Local Access | 3/3 | Complete   | 2026-03-14 |
-| 3. Tunnel Validation | 1/2 | In Progress|  |
+| 3. Tunnel Validation | 2/2 | Complete   | 2026-03-14 |
 
 ## Phases
 
 - [x] **Phase 1: Diagnostics** - Build diagnostic tooling to identify connectivity failure point
 - [x] **Phase 2: Local Access** - Enable Claude Code to connect via localhost without OAuth (completed 2026-03-14)
-- [ ] **Phase 3: Tunnel Validation** - Verify existing Claude.ai tunnel access still works
+- [x] **Phase 3: Tunnel Validation** - Verify existing Claude.ai tunnel access still works (completed 2026-03-14)
 
 ## Phase Details
 
@@ -78,7 +78,7 @@
 2. Authorized Claude.ai sessions can call MCP tools through the tunnel
 3. README clearly documents the differences between local config (no OAuth) and tunnel config (OAuth required)
 
-**Plans:** 1/2 plans executed
+**Plans:** 2/2 plans complete
 
 | Plan | Wave | Description |
 |------|------|-------------|
