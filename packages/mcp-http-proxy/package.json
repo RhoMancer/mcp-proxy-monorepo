@@ -15,6 +15,7 @@
     "start": "node src/cli.js",
     "dev": "node --watch src/cli.js",
     "test": "vitest",
+    "test:diagnostics": "vitest test/diagnostics --run",
     "test:ui": "vitest --ui",
     "test:run": "vitest run",
     "test:coverage": "vitest run --coverage"
