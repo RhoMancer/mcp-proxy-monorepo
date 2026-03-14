@@ -70,13 +70,30 @@ node src/cli.js -c path/to/local.config.js
 
 **Local vs. OAuth Modes:**
 
-| Mode | Config Keys | Use Case | Authentication |
-|------|-------------|----------|----------------|
-| **Local** | (none) | Claude Code CLI development | None |
-| **OAuth 2.0** | `auth` | Personal use with OAuth providers | GitHub/Google/etc |
-| **OAuth Provider** | `oauthProvider` | Claude.ai Connectors (tunnel) | PKCE/Client Credentials |
+| Mode | Config Keys | Use Case | Authentication | Tunnel Required? |
+|------|-------------|----------|----------------|------------------|
+| **Local** | (none) | Claude Code CLI development | None | No |
+| **OAuth 2.0** | `auth` | Personal use with OAuth providers | GitHub/Google/etc | Optional |
+| **OAuth Provider** | `oauthProvider` | Claude.ai Connectors (tunnel) | PKCE/Client Credentials | Yes (for Claude.ai) |
 
 **Example config:** See [examples/local-only.config.js](examples/local-only.config.js) for a complete template.
+
+### When to Use Each Mode
+
+**Local Mode (No Auth)**
+- **Use for:** Claude Code CLI, local development, trusted networks
+- **Benefits:** Simplest setup, no authentication overhead
+- **Limitation:** Only works on localhost, not accessible from external networks
+
+**OAuth Provider Mode (Tunnel)**
+- **Use for:** Claude.ai Connectors, external HTTPS access, Cloudflare Tunnel
+- **Benefits:** Secure credential-based access, works through tunnel to Claude.ai
+- **Requirements:** Requires `oauthProvider` config and tunnel setup (Cloudflare Tunnel or similar)
+
+**OAuth 2.0 Redirect Mode**
+- **Use for:** Personal use with GitHub/Google authentication, web application deployment
+- **Benefits:** User authentication via social login, session management
+- **Requirements:** Requires OAuth app registration with provider (GitHub, Google, etc.)
 
 ### Installation
 
@@ -111,6 +128,40 @@ npx mcp-proxy
 # or with a custom config
 npx mcp-proxy --config my-config.js
 ```
+
+### Tunnel Mode Quick Start
+
+**Use tunnel mode for Claude.ai Connectors with HTTPS access via Cloudflare Tunnel.**
+
+Tunnel mode requires OAuth Provider configuration. For detailed setup, see [docs/claude-connectors-guide.md](docs/claude-connectors-guide.md).
+
+**Minimal tunnel config:**
+
+```js
+// tunnel.config.js
+export default {
+  mcp: {
+    command: 'npx',
+    args: ['-y', 'your-mcp-server'],
+    env: {
+      API_KEY: process.env.YOUR_API_KEY
+    }
+  },
+  server: {
+    port: 8080,
+    host: '127.0.0.1'
+  },
+  tunnel: {
+    domain: 'your-domain.dev',      // Your Cloudflare Tunnel domain
+    tunnelId: 'your-tunnel-id'       // From cloudflared tunnel create
+  },
+  oauthProvider: {
+    defaultSecret: process.env.OAUTH_CLIENT_SECRET  // Required for Claude.ai
+  }
+};
+```
+
+**Example configs:** See `examples/claude-connectors-hevy.config.js` for a complete tunnel setup with Cloudflare Tunnel integration.
 
 ## Authentication Modes
 
@@ -198,9 +249,11 @@ export default {
 
 ### Mode 3: OAuth Provider Mode (`oauthProvider`)
 
-**Use when:** Using Claude Connectors (Beta feature) which requires OAuth client credentials flow.
+**Use when:** Using Claude Connectors (Beta feature) with Cloudflare Tunnel for external HTTPS access.
 
 **How it works:** Clients (like Claude) send `client_id` and `client_secret` to receive a JWT token for API access.
+
+> **Note:** OAuth Provider mode is designed for tunnel/Claude.ai use cases where you need secure external access. For local Claude Code CLI development, use Local Mode (no auth) instead.
 
 **Config:**
 
