@@ -2,6 +2,19 @@
 
 **Start the Hevy MCP connector for Claude Connectors.**
 
+## ⚠️ Startup Order (Important!)
+
+**For Claude Code CLI + Claude.ai Web App:**
+
+| Order | Step | Command |
+|-------|------|---------|
+| 1️⃣ | Start proxies | `.\START_HEVY_DUAL_MODE.bat` |
+| 2️⃣ | **THEN** start Claude Code CLI | Restart if already running |
+
+**Why:** Claude Code CLI discovers MCP tools at startup only. Proxies must be running first.
+
+---
+
 ## 📋 First-Time Setup
 
 Before starting, create your `.env` file:

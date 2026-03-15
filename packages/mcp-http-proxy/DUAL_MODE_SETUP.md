@@ -16,6 +16,26 @@ Running both allows you to:
 2. Use the Hevy connector in the Claude.ai web app simultaneously
 3. Have a seamless workflow across both environments
 
+## ⚠️ Important: Startup Order
+
+**CRITICAL:** Start the proxies BEFORE starting Claude Code CLI.
+
+| Order | Step | Why |
+|-------|------|-----|
+| 1️⃣ | Start proxies (see below) | MCP servers must be running first |
+| 2️⃣ | Start Claude Code CLI | It discovers MCP tools at startup only |
+| 3️⃣ | Use Claude.ai | Connects via tunnel anytime |
+
+**Why this matters:**
+- Claude Code CLI reads MCP server configurations **once at startup**
+- If servers aren't available, it marks them unavailable and **doesn't retry**
+- SSE connections are stateful — they don't auto-reconnect after server restarts
+
+**After computer restart:**
+1. Run `.\START_HEVY_DUAL_MODE.bat` first
+2. Then start Claude Code CLI
+3. Tools will be available immediately
+
 ## Quick Start
 
 ### Option 1: Use the Batch File (Windows)
@@ -190,9 +210,24 @@ taskkill /PID <PID> /F
 
 ### Tools Not Showing in Claude
 
-1. Restart Claude (both CLI and web app)
-2. Check proxy logs for errors
-3. Verify HEVY_API_KEY is set in `.env`
+1. **Verify startup order:** Proxies MUST be running before Claude Code starts
+2. **Restart Claude Code CLI** after starting proxies
+3. Check proxy logs for errors
+4. Verify HEVY_API_KEY is set in `.env`
+
+### Computer Restarted? (Session Lost)
+
+When your computer restarts, all background processes are killed:
+
+```bash
+# 1. Start proxies first
+.\START_HEVY_DUAL_MODE.bat
+
+# 2. Then restart Claude Code CLI
+# Tools will be available on next session
+```
+
+**Why:** SSE connections are stateful. The client (Claude Code) must re-establish the connection after the server restarts. This only happens on Claude Code startup, not when proxies start.
 
 ## Stopping Both Proxies
 
@@ -208,12 +243,32 @@ taskkill /PID <PID> /F
 taskkill /F /FI "WINDOWTITLE eq MCP Proxy*"
 ```
 
+## Emergency Recovery (Cat Incident Protocol)
+
+If your computer suddenly loses power (cat on power button, etc.):
+
+```bash
+# Step 1: Start everything
+cd packages/mcp-http-proxy
+.\START_HEVY_DUAL_MODE.bat
+
+# Step 2: Restart Claude Code CLI
+# Close and reopen your terminal/IDE
+
+# Step 3: Verify
+curl http://127.0.0.1:8083/health
+curl http://127.0.0.1:8082/health
+```
+
+**Remember:** Proxies first, then Claude Code. Always.
+
 ## Summary
 
 - **Port 8083 (local):** For Claude Code CLI - no auth, simpler setup
 - **Port 8082 (OAuth):** For Claude.ai web app - requires OAuth credentials and tunnel
 - **Both can run simultaneously** without conflicts
 - **Share the same HEVY_API_KEY** from environment variables
+- **Startup order matters:** Proxies → Claude Code → Everything else
 
 For more details, see:
 - [README.md](README.md) - Full documentation

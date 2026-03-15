@@ -8,9 +8,10 @@ REM   1. OAuth Provider mode (port 8082) - For Claude.ai web app with tunnel
 REM   2. Local mode (port 8083) - For Claude Code CLI (no authentication)
 REM
 REM DAILY WORKFLOW:
-REM   1. Run this file
+REM   1. Run this file FIRST
 REM   2. Keep windows open
-REM   3. Use Claude Code CLI (port 8083) AND Claude.ai web app (port 8082)
+REM   3. THEN start Claude Code CLI
+REM   4. Use Claude Code CLI (port 8083) AND Claude.ai web app (port 8082)
 REM
 REM Configuration:
 REM   - OAuth Provider: examples/claude-connectors-hevy.config.js
@@ -69,6 +70,14 @@ echo   curl http://127.0.0.1:8083/health
 echo.
 echo To stop both proxies, close the terminal windows or run:
 echo   .\STOP_HEVY_DUAL_MODE.bat
+echo.
+echo ========================================================================
+echo  IMPORTANT: START CLAUDE CODE CLI NOW
+echo ========================================================================
+echo.
+echo The proxies are ready! Start or restart Claude Code CLI to access Hevy tools.
+echo.
+echo If Claude Code was already running, restart it to discover the MCP tools.
 echo.
 echo For full documentation: DUAL_MODE_SETUP.md
 echo.

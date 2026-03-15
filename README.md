@@ -9,6 +9,14 @@ A collection of HTTP proxies for stdio-based MCP (Model Context Protocol) server
 ## 🚀 **HERE FOR HEVY + CLAUDE CONNECTORS?**
 
 **→ [packages/mcp-http-proxy/QUICKSTART.md](packages/mcp-http-proxy/QUICKSTART.md)** — Full Hevy + OAuth documentation
+**→ [packages/mcp-http-proxy/DUAL_MODE_SETUP.md](packages/mcp-http-proxy/DUAL_MODE_SETUP.md)** — Dual-mode (CLI + web) setup
+
+### ⚡ Quick Start for Hevy
+
+**Startup Order (Important):**
+1. Run `.\packages\mcp-http-proxy\START_HEVY_DUAL_MODE.bat` **first**
+2. **THEN** start Claude Code CLI
+3. Tools will be available immediately
 
 ### Quick Start for Hevy
 
