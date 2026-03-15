@@ -1,6 +1,10 @@
 # Dual-Mode Setup: Claude Code CLI + Claude.ai Web App
 
-This guide explains how to run **three services simultaneously** for Hevy MCP:
+**Example Setup: Hevy MCP Dual-Mode Configuration**
+
+> **Note:** This guide demonstrates the dual-mode setup using Hevy as a showcase example. The dual-mode pattern (simultaneous local + OAuth access) can be applied to any MCP server.
+
+This guide explains how to run **three services simultaneously**:
 - **Cloudflare Tunnel** - Routes external traffic to OAuth proxy
 - **OAuth Provider mode (port 8082)** - For Claude.ai web app with Cloudflare Tunnel
 - **Local mode (port 8083)** - For Claude Code CLI (no authentication)
@@ -9,13 +13,13 @@ This guide explains how to run **three services simultaneously** for Hevy MCP:
 
 | Service | Port/URL | Use Case | Authentication |
 |---------|----------|----------|----------------|
-| **Cloudflare Tunnel** | `hevy.angussoftware.dev` | Routes external traffic | None |
+| **Cloudflare Tunnel** | `your-tunnel-url.example.com` | Routes external traffic | None |
 | **OAuth Provider** | 8082 (internal) | Claude.ai web app | OAuth credentials |
 | **Local Mode** | 8083 | Claude Code CLI | None |
 
 Running all three allows you to:
 1. Develop and test locally using Claude Code CLI
-2. Use the Hevy connector in the Claude.ai web app simultaneously
+2. Use the MCP connector in the Claude.ai web app simultaneously
 3. Have a seamless workflow across both environments
 
 ## ⚠️ Important: Startup Order
@@ -74,7 +78,7 @@ curl http://127.0.0.1:8083/health
 curl http://127.0.0.1:8082/health
 
 # Check Cloudflare Tunnel (optional - from outside your network)
-curl https://hevy.angussoftware.dev/health
+curl https://your-tunnel-url.example.com/health
 ```
 
 All should return:
@@ -131,7 +135,7 @@ export default {
     host: '127.0.0.1'
   },
   tunnel: {
-    domain: 'hevy.angussoftware.dev',
+    domain: 'your-tunnel-url.example.com',
     tunnelId: 'your-tunnel-id'
   },
   oauthProvider: {
@@ -162,16 +166,16 @@ Configure Claude Code to connect to the local proxy:
 
 1. Go to **Claude.ai** → **Add custom connector** (Beta)
 2. Fill in:
-   - **Name:** Hevy Workout Tracker
-   - **Remote MCP server URL:** `https://hevy.angussoftware.dev/message`
-   - **OAuth Client ID:** `claude-hevy-client`
+   - **Name:** Your MCP Server Name
+   - **Remote MCP server URL:** `https://your-tunnel-url.example.com/message`
+   - **OAuth Client ID:** `your-client-id`
    - **OAuth Client Secret:** (from `.env` file → `OAUTH_CLIENT_SECRET`)
 
 ## Environment Variables
 
 Required in `packages/mcp-http-proxy/.env`:
 ```bash
-HEVY_API_KEY=your_hevy_api_key_from_hevy_app
+YOUR_MCP_SERVER_API_KEY=your_api_key_here
 OAUTH_CLIENT_SECRET=your_generated_oauth_secret
 ```
 
@@ -280,7 +284,7 @@ cd packages/mcp-http-proxy
 # Step 3: Verify all three services
 curl http://127.0.0.1:8083/health    # Local proxy
 curl http://127.0.0.1:8082/health    # OAuth proxy
-curl https://hevy.angussoftware.dev/health  # Tunnel (optional)
+curl https://your-tunnel-url.example.com/health  # Tunnel (optional)
 ```
 
 **Remember:** All three services → THEN Claude Code. Always.
