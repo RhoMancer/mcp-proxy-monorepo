@@ -174,8 +174,8 @@ export default {
     host: '127.0.0.1'
   },
   tunnel: {
-    domain: 'hevy.angussoftware.dev',
-    tunnelId: 'e02235fc-0f81-42c7-b997-ec10be64c5ba'
+    domain: 'your-tunnel-url.example.com',
+    tunnelId: 'your-tunnel-id'
   },
   oauthProvider: {
     defaultSecret: process.env.OAUTH_CLIENT_SECRET || 'hevy-secret-key-change-me'
@@ -199,9 +199,9 @@ cd packages/mcp-http-proxy
 | Field | Value |
 |-------|-------|
 | Name | Hevy Workout Tracker |
-| Remote MCP server URL | `https://hevy.angussoftware.dev/message` (HTTPS with tunnel) |
-| Authorization Endpoint | `https://hevy.angussoftware.dev/oauth/authorize` |
-| Token Endpoint | `https://hevy.angussoftware.dev/oauth/token` |
+| Remote MCP server URL | `https://your-tunnel-url.example.com/message` (HTTPS with tunnel) |
+| Authorization Endpoint | `https://your-tunnel-url.example.com/oauth/authorize` |
+| Token Endpoint | `https://your-tunnel-url.example.com/oauth/token` |
 | OAuth Client ID | `claude-hevy-client` (or any value) |
 | OAuth Client Secret | Use your `OAUTH_CLIENT_SECRET` from `.env` |
 

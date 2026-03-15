@@ -1,6 +1,8 @@
 # 🚀 Daily Quickstart Guide
 
-**Start the Hevy MCP connector for Claude Connectors.**
+**Example Setup: Hevy MCP Connector for Claude Connectors**
+
+> **Note:** This guide uses Hevy (workout tracker API) as a showcase example to demonstrate the MCP HTTP Proxy's capabilities. You can adapt this setup for any MCP server by replacing the Hevy-specific configuration with your own MCP server details.
 
 ## ⚠️ Startup Order (Important!)
 

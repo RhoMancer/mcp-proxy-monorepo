@@ -26,7 +26,7 @@ Primary entry points for daily use.
 | `START_HEVY_CONNECTOR_WITH_TUNNEL.bat` | Hevy with Cloudflare Tunnel (Claude.ai access) | `packages/mcp-http-proxy/START_HEVY_WITH_TUNNEL.bat` |
 | `STOP_HEVY_CONNECTOR_WITH_TUNNEL.bat` | Stop Hevy connector and tunnel | `packages/mcp-http-proxy/STOP_PROXY_AND_TUNNEL.bat` |
 | `START_LIBREOFFICE_CONNECTOR_WITH_TUNNEL.bat` | LibreOffice with tunnel | `packages/libreoffice-calc-mcp/START_LIBREOFFICE_WITH_TUNNEL.bat` |
-| `start-hevy-proxy.bat` | Quick start for Claude Code CLI (local only) | `packages/mcp-http-proxy/` (inline logic) |
+| `start-hevy-proxy.bat` | Quick start for Claude Code CLI (local only) | `packages/mcp-http-proxy/start-hevy-local-proxy.bat` |
 
 ---
 
@@ -38,6 +38,7 @@ Generic MCP HTTP proxy scripts and Hevy-specific convenience wrappers.
 |--------|---------|
 | `START_PROXY_WITH_CONFIG.bat` | Generic proxy starter - accepts any config file as argument |
 | `START_HEVY.bat` | Hevy: Local proxy only (port 8083, no auth) |
+| `start-hevy-local-proxy.bat` | Hevy: Local proxy with health check and auto-start verification |
 | `START_HEVY_WITH_TUNNEL.bat` | Hevy: Proxy + Cloudflare Tunnel (OAuth required) |
 | `START_HEVY_DUAL_MODE.bat` | Hevy: Both local (8083) + tunnel (8082) simultaneously |
 | `STOP_HEVY_DUAL_MODE.bat` | Stop both dual-mode proxy instances |
