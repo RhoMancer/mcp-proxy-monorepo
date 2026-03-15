@@ -5,51 +5,36 @@
 A collection of HTTP proxies for stdio-based MCP (Model Context Protocol) servers, built with a shared generic proxy package.
 
 ---
-<!-- DO NOT DELETE: Hevy MCP integration is actively used. The mcp-http-proxy package provides generic proxy functionality, with Hevy as a primary use case. -->
-## 🚀 **HERE FOR HEVY + CLAUDE CONNECTORS?**
 
-**→ [packages/mcp-http-proxy/QUICKSTART.md](packages/mcp-http-proxy/QUICKSTART.md)** — Full Hevy + OAuth documentation
-**→ [packages/mcp-http-proxy/DUAL_MODE_SETUP.md](packages/mcp-http-proxy/DUAL_MODE_SETUP.md)** — Dual-mode (CLI + web) setup
+## Showcase Examples
 
-### ⚡ Quick Start for Hevy
+This monorepo includes example implementations demonstrating the proxy's versatility:
+
+| Example | Description | Package |
+|---------|-------------|---------|
+| **Hevy** | Workout tracker API integration | [mcp-http-proxy](packages/mcp-http-proxy/QUICKSTART.md) |
+| **LibreOffice** | Spreadsheet automation with 11 tools | [libreoffice-calc-mcp](packages/libreoffice-calc-mcp/) |
+
+> **Note:** These are showcase examples. You can adapt the proxy for any stdio-based MCP server by following the configuration patterns shown.
+
+---
+
+## 🚀 Quick Start
+
+### For Hevy (Showcase Example)
+
+**→ [packages/mcp-http-proxy/QUICKSTART.md](packages/mcp-http-proxy/QUICKSTART.md)** — Full setup guide
 
 **Startup Order (Important):**
 1. Run `.\packages\mcp-http-proxy\START_HEVY_DUAL_MODE.bat` **first**
 2. **THEN** start Claude Code CLI
 3. Tools will be available immediately
 
-### Quick Start for Hevy
+### For LibreOffice (Showcase Example)
 
-| Action | Command |
-|:-------|:--------|
-| **Start** | `cd packages/mcp-http-proxy && npx mcp-proxy --config examples/hevy-mcp.config.js` |
-| **With OAuth** | `npx mcp-proxy --config examples/oauth-hevy.config.js` |
+**→ [packages/libreoffice-calc-mcp/README.md](packages/libreoffice-calc-mcp/README.md)** — Complete setup guide
 
-**Setup:**
-1. Create `packages/mcp-http-proxy/.env` with your `HEVY_API_KEY`
-2. The proxy runs on `http://127.0.0.1:8080`
-3. Configure Claude to connect to: `http://127.0.0.1:8080/mcp`
-
-**What this does:**
-- Runs the `hevy-mcp` npm package (installed via npx)
-- Exposes it as an HTTP endpoint that Claude can connect to
-- Optional OAuth authentication for secure remote access
-
----
-
-## Overview
-
-This monorepo contains:
-- **`mcp-http-proxy`** - Generic HTTP-to-stdio proxy for any MCP server
-  - Supports **Hevy** workout tracker, **LibreOffice**, and any stdio-based MCP server
-- **`libreoffice-calc-mcp`** - HTTP proxy + MCP server for LibreOffice Calc automation
-- **`libreoffice-calc-mcp-server`** - Python MCP server with 11 Calc tools
-
-## Quick Start
-
-**Requirements:**
-- Node.js 18 or higher
-- For LibreOffice: LibreOffice installed (optional for other packages)
+### For Any MCP Server
 
 ```bash
 # Clone and install
@@ -57,61 +42,40 @@ git clone https://github.com/RhoMancer/mcp-proxy-monorepo.git
 cd mcp-proxy-monorepo
 npm install
 
-# Copy example environment files and configure
-cp .env.example .env
-# Edit .env with your API keys and secrets
+# Configure your MCP server
+cp packages/mcp-http-proxy/examples/echo-test.config.js my-config.js
+# Edit my-config.js with your MCP server details
 
-# Start specific proxies
-npm run start:libreoffice   # LibreOffice Calc
+# Start the proxy
+cd packages/mcp-http-proxy
+npx mcp-proxy --config ../my-config.js
 ```
 
-## Project Structure
+---
 
-```
-mcp-proxy-monorepo/
-├── .env.example                   # Environment variables template
-├── .validation/                   # Integration tests for example implementations
-├── docs/                          # Additional documentation
-│   ├── OAUTH_QUICKSTART.md        # 5-minute OAuth setup guide
-│   └── OAUTH_TESTING_GUIDE.md     # Complete OAuth testing guide
-├── packages/
-│   ├── mcp-http-proxy/            # Generic proxy package
-│   ├── libreoffice-calc-mcp/      # LibreOffice Calc integration
-│   └── libreoffice-calc-mcp-server/ # Python MCP server
-├── START_HEVY_CONNECTOR_WITH_TUNNEL.bat  # Root: Start Hevy + tunnel
-├── STOP_HEVY_CONNECTOR_WITH_TUNNEL.bat   # Root: Stop Hevy
-└── BATCH_FILES.md                 # Complete batch file reference
-├── package.json                   # Monorepo root
-└── README.md
-```
+## Overview
 
-**Note:** The `.validation/` directory contains integration tests for **example implementations** (OAuth, LibreOffice), not tests for the generic proxy itself.
+This monorepo contains:
 
-## Configuration
+- **`mcp-http-proxy`** - Generic HTTP-to-stdio proxy for any MCP server
+  - Configuration-driven MCP server spawning
+  - OAuth 2.0 Provider mode for secure remote access
+  - CORS support, health checks, Cloudflare tunnel support
 
-Each package has its own `.env.example` file. Copy the example for the package you're using:
+- **`libreoffice-calc-mcp`** - HTTP proxy + MCP server for LibreOffice Calc
+  - 11 MCP tools for spreadsheet automation
+  - Auto-starts LibreOffice in socket mode
 
-```bash
-# For Hevy (mcp-http-proxy):
-cp packages/mcp-http-proxy/.env.example packages/mcp-http-proxy/.env
+- **`libreoffice-calc-mcp-server`** - Python MCP server implementation
+  - Demonstrates MCP server patterns
 
-# For LibreOffice:
-cp packages/libreoffice-calc-mcp/.env.example packages/libreoffice-calc-mcp/.env
-
-# Or copy the root .env.example for a monorepo-wide template:
-cp .env.example .env
-```
-
-Required environment variables vary by package:
-- **Hevy** (via `mcp-http-proxy/.env`): `HEVY_API_KEY` - Get from [hevy.app](https://hevy.app)
-- **LibreOffice** (via `libreoffice-calc-mcp/.env`): Usually auto-detected on Windows
-- **OAuth Provider**: `OAUTH_CLIENT_SECRET` (generate with `node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"`)
+---
 
 ## Packages
 
 ### mcp-http-proxy
 
-Generic HTTP-to-stdio proxy that can work with any MCP server.
+Generic HTTP-to-stdio proxy that works with any MCP server.
 
 **Features:**
 - Configuration-driven MCP server spawning
@@ -136,15 +100,48 @@ npx mcp-proxy --config examples/hevy-mcp.config.js
 npx mcp-proxy --config examples/echo-oauth-test.config.js
 ```
 
-**Test Server:** The `echo-test.config.js` uses a built-in echo server — perfect for testing OAuth without external dependencies.
+**Documentation:**
+- [QUICKSTART.md](packages/mcp-http-proxy/QUICKSTART.md) - Hevy example setup
+- [DUAL_MODE_SETUP.md](packages/mcp-http-proxy/DUAL_MODE_SETUP.md) - Dual-mode configuration
+- [README.md](packages/mcp-http-proxy/README.md) - Full package documentation
+
+### libreoffice-calc-mcp
+
+Complete LibreOffice Calc integration with HTTP proxy and Python MCP server.
+
+**Features:**
+- 11 MCP tools: read/write cells, ranges, formulas; sheet management; search
+- UNO-based integration with LibreOffice
+- Auto-starts LibreOffice in socket mode — no manual configuration needed
+- Windows auto-configured for LibreOffice's bundled Python
+- Optional Cloudflare tunnel for remote access
+
+**Quick Start (Windows):**
+```batch
+cd packages\libreoffice-calc-mcp
+START_LIBREOFFICE_AND_PROXY.bat
+```
+
+**Documentation:**
+- [README.md](packages/libreoffice-calc-mcp/README.md) - Complete setup guide
+
+### libreoffice-calc-mcp-server
+
+Python MCP server with 11 LibreOffice Calc tools.
+
+**Features:**
+- Demonstrates MCP server implementation patterns
+- Tools for cell/range operations, formula evaluation, sheet management
+
+---
 
 ## OAuth Provider Mode
 
-The proxy supports **OAuth 2.0 Provider mode** for secure remote access:
+The proxy supports **OAuth 2.0 Provider mode** for secure remote access.
 
 **Quick Start:** See [docs/OAUTH_QUICKSTART.md](docs/OAUTH_QUICKSTART.md) — 5-minute setup
 
-**Full Guide:** See [docs/OAUTH_TESTING_GUIDE.md](docs/OAUTH_TESTING_GUIDE.md) — Complete OAuth testing with Claude Connectors
+**Full Guide:** See [docs/OAUTH_TESTING_GUIDE.md](docs/OAUTH_TESTING_GUIDE.md) — Complete OAuth testing
 
 **Test Echo Server with OAuth:**
 ```bash
@@ -154,83 +151,76 @@ npx mcp-proxy --config examples/echo-oauth-test.config.js
 
 **Supported Providers:** GitHub, Google, Auth0, and any OAuth 2.0 provider
 
-### libreoffice-calc-mcp
+---
 
-Complete LibreOffice Calc integration with HTTP proxy and Python MCP server.
+## Project Structure
 
-**Features:**
-- 11 MCP tools: read/write cells, ranges, formulas; sheet management; search
-- UNO-based integration with LibreOffice
-- **Auto-starts LibreOffice in socket mode** — no manual configuration needed
-- Windows auto-configured for LibreOffice's bundled Python
-- HTTP proxy at http://127.0.0.1:8081
-- Optional Cloudflare tunnel for remote access
-
-**Quick Start (Windows — Easiest):**
-```batch
-REM From the libreoffice-calc-mcp directory:
-cd packages\libreoffice-calc-mcp
-
-REM Option 1: Start everything (LibreOffice + proxy)
-START_LIBREOFFICE_AND_PROXY.bat
-
-REM Option 2: Just the proxy (if LibreOffice already running)
-START_LIBREOFFICE_PROXY.bat
-
-REM Option 3: Just LibreOffice (for manual setup)
-START_LIBREOFFICE_HEADLESS.bat
+```
+mcp-proxy-monorepo/
+├── docs/                              # Cross-cutting documentation
+│   ├── OAUTH_QUICKSTART.md            # 5-minute OAuth setup
+│   └── OAUTH_TESTING_GUIDE.md         # Complete OAuth testing
+├── packages/
+│   ├── mcp-http-proxy/                # Generic proxy package
+│   │   ├── QUICKSTART.md              # Hevy example setup
+│   │   ├── DUAL_MODE_SETUP.md         # Dual-mode guide
+│   │   └── examples/                  # Configuration examples
+│   ├── libreoffice-calc-mcp/          # LibreOffice integration
+│   └── libreoffice-calc-mcp-server/   # Python MCP server
+├── BATCH_FILES.md                     # Batch script reference
+├── START_HEVY_CONNECTOR_WITH_TUNNEL.bat
+├── START_LIBREOFFICE_CONNECTOR_WITH_TUNNEL.bat
+└── package.json                       # Monorepo root
 ```
 
-**Or use npm:**
+---
+
+## Configuration
+
+Each package has its own `.env.example` file:
+
 ```bash
-cd packages/libreoffice-calc-mcp
-npm start          # Automatically starts LibreOffice + proxy
+# For mcp-http-proxy:
+cp packages/mcp-http-proxy/.env.example packages/mcp-http-proxy/.env
+
+# For LibreOffice:
+cp packages/libreoffice-calc-mcp/.env.example packages/libreoffice-calc-mcp/.env
 ```
 
-**Troubleshooting:**
-- **Error: "LibreOffice Calc connector isn't currently running"** → Run `npm start` which auto-starts LibreOffice
-- See `packages/libreoffice-calc-mcp/README.md` for detailed setup
+**Common Environment Variables:**
+- `OAUTH_CLIENT_SECRET` — Generate with `node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"`
+- `YOUR_MCP_SERVER_API_KEY` — Varies by MCP server
 
-**Note:** On Windows, the MCP SDK must be installed in LibreOffice's Python:
-```bash
-curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
-"C:/Program Files/LibreOffice/program/python.exe" get-pip.py
-"C:/Program Files/LibreOffice/program/python-core-3.10.19/Scripts/pip.exe" install mcp
-```
+---
 
 ## Development
 
 ### Workspace Structure
 
-This monorepo uses **npm workspaces** for efficient package management:
+This monorepo uses **npm workspaces**:
 
 ```
 mcp-proxy-monorepo/
 ├── packages/
 │   ├── mcp-http-proxy/          # Generic proxy (workspace package)
-│   ├── libreoffice-calc-mcp/    # Depends on mcp-http-proxy via workspace
+│   ├── libreoffice-calc-mcp/    # Depends on mcp-http-proxy
 │   └── libreoffice-calc-mcp-server/  # Python package (not in npm workspace)
 ```
 
 **Workspace Commands:**
 ```bash
-# Install all dependencies at once
-npm install
-
-# Run scripts in specific workspace
+npm install                           # Install all dependencies
 npm run dev -w packages/mcp-http-proxy
 npm start -w packages/libreoffice-calc-mcp
-
-# Run script in all workspaces
-npm run clean -ws --if-present
+npm run clean -ws --if-present        # Run in all workspaces
 ```
 
-**Adding a New MCP Proxy**
+### Adding a New MCP Proxy
 
-1. Create a new package in `packages/your-mcp-proxy/`
-2. Add a `package.json` that depends on `mcp-http-proxy`
-3. Create an `mcp.config.js` with your MCP server configuration
-4. Add a `README.md` with setup instructions
+1. Create `packages/your-mcp-proxy/`
+2. Add `package.json` depending on `mcp-http-proxy`
+3. Create `mcp.config.js` with your MCP server configuration
+4. Add `README.md` with setup instructions
 
 Example `package.json`:
 ```json
@@ -264,6 +254,8 @@ export default {
 };
 ```
 
+---
+
 ## Contributing
 
 Contributions welcome! Please:
@@ -272,9 +264,13 @@ Contributions welcome! Please:
 3. Make your changes
 4. Submit a pull request
 
+---
+
 ## License
 
 MIT
+
+---
 
 ## Related
 
