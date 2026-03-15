@@ -3,9 +3,10 @@ REM ========================================================================
 REM MCP HTTP Proxy - Hevy Dual Mode Setup
 REM ========================================================================
 REM
-REM This starts TWO proxy instances simultaneously:
-REM   1. OAuth Provider mode (port 8082) - For Claude.ai web app with tunnel
-REM   2. Local mode (port 8083) - For Claude Code CLI (no authentication)
+REM This starts THREE services simultaneously:
+REM   1. Cloudflare Tunnel - Routes external traffic to OAuth proxy
+REM   2. OAuth Provider mode (port 8082) - For Claude.ai web app with tunnel
+REM   3. Local mode (port 8083) - For Claude Code CLI (no authentication)
 REM
 REM DAILY WORKFLOW:
 REM   1. Run this file FIRST
@@ -28,12 +29,20 @@ echo ========================================================================
 echo  Hevy MCP Connector - Dual Mode Setup
 echo ========================================================================
 echo.
-echo Starting TWO proxy instances:
-echo   [1/2] OAuth Provider mode (port 8082) - For Claude.ai web app
-echo   [2/2] Local mode (port 8083) - For Claude Code CLI
+echo Starting THREE services:
+echo   [1/3] Cloudflare Tunnel - For external access to OAuth proxy
+echo   [2/3] OAuth Provider mode (port 8082) - For Claude.ai web app
+echo   [3/3] Local mode (port 8083) - For Claude Code CLI
 echo.
 echo ========================================================================
 echo.
+
+REM Start Cloudflare Tunnel FIRST (required for OAuth proxy external access)
+echo [1/3] Starting Cloudflare Tunnel...
+start "Cloudflare Tunnel - Hevy" /d "%CD%" cloudflared tunnel --config config.yml run
+
+REM Wait for tunnel to establish
+timeout /t 3 /nobreak > nul
 
 REM Start the OAuth Provider proxy (for Claude.ai web app)
 echo [1/2] Starting OAuth Provider proxy (port 8082)...
@@ -51,15 +60,19 @@ timeout /t 2 /nobreak > nul
 
 echo.
 echo ========================================================================
-echo  BOTH PROXIES ARE RUNNING
+echo  ALL THREE SERVICES ARE RUNNING
 echo ========================================================================
 echo.
-echo Proxy 1 (OAuth Provider): http://127.0.0.1:8082
+echo Service 1 (Cloudflare Tunnel): https://hevy.angussoftware.dev
+echo   - Routes external traffic to OAuth proxy
+echo   - Required for Claude.ai web app access
+echo.
+echo Service 2 (OAuth Provider):   http://127.0.0.1:8082
 echo   - For Claude.ai web app
 echo   - Requires OAuth credentials
-echo   - Cloudflare Tunnel: https://hevy.angussoftware.dev
+echo   - Accessed via Cloudflare Tunnel externally
 echo.
-echo Proxy 2 (Local Mode):    http://127.0.0.1:8083
+echo Service 3 (Local Mode):       http://127.0.0.1:8083
 echo   - For Claude Code CLI
 echo   - No authentication required
 echo   - Configure in: ~/.claude/mcp_servers.json

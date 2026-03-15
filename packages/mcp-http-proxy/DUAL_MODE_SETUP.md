@@ -1,17 +1,19 @@
 # Dual-Mode Setup: Claude Code CLI + Claude.ai Web App
 
-This guide explains how to run **two proxy instances simultaneously** for Hevy MCP:
-- **Local mode (port 8083)** - For Claude Code CLI (no authentication)
+This guide explains how to run **three services simultaneously** for Hevy MCP:
+- **Cloudflare Tunnel** - Routes external traffic to OAuth proxy
 - **OAuth Provider mode (port 8082)** - For Claude.ai web app with Cloudflare Tunnel
+- **Local mode (port 8083)** - For Claude Code CLI (no authentication)
 
-## Why Two Proxies?
+## Why Three Services?
 
-| Mode | Port | Use Case | Authentication | Tunnel |
-|------|------|----------|----------------|--------|
-| **Local** | 8083 | Claude Code CLI | None | No |
-| **OAuth Provider** | 8082 | Claude.ai web app | OAuth credentials | Yes (Cloudflare) |
+| Service | Port/URL | Use Case | Authentication |
+|---------|----------|----------|----------------|
+| **Cloudflare Tunnel** | `hevy.angussoftware.dev` | Routes external traffic | None |
+| **OAuth Provider** | 8082 (internal) | Claude.ai web app | OAuth credentials |
+| **Local Mode** | 8083 | Claude Code CLI | None |
 
-Running both allows you to:
+Running all three allows you to:
 1. Develop and test locally using Claude Code CLI
 2. Use the Hevy connector in the Claude.ai web app simultaneously
 3. Have a seamless workflow across both environments
@@ -65,14 +67,32 @@ node src/cli.js -c ../examples/hevy-local.config.js
 ## Verify Both Proxies
 
 ```bash
-curl http://127.0.0.1:8082/health
+# Check local proxy (for Claude Code CLI)
 curl http://127.0.0.1:8083/health
+
+# Check OAuth proxy (for Claude.ai)
+curl http://127.0.0.1:8082/health
+
+# Check Cloudflare Tunnel (optional - from outside your network)
+curl https://hevy.angussoftware.dev/health
 ```
 
-Both should return:
+All should return:
 ```json
 {"status":"ok"}
 ```
+
+## Service Status Checklist
+
+Before using Claude, verify all three services are running:
+
+| Service | Command to Check | Expected Result |
+|---------|------------------|-----------------|
+| Local Proxy | `curl http://127.0.0.1:8083/health` | `{"status":"ok",...}` |
+| OAuth Proxy | `curl http://127.0.0.1:8082/health` | `{"status":"ok",...}` |
+| Cloudflare Tunnel | `tasklist \| findstr cloudflared` | `cloudflared.exe` listed |
+
+**If any service is missing:** Run `.\START_HEVY_DUAL_MODE.bat` again.
 
 ## Configuration
 
@@ -205,8 +225,10 @@ taskkill /PID <PID> /F
 ### Claude.ai Web App Can't Connect
 
 1. Verify OAuth proxy is running: `curl http://127.0.0.1:8082/health`
-2. Verify Cloudflare Tunnel is running
-3. Check OAuth secret matches in `.env` file
+2. **Verify Cloudflare Tunnel is running:** `tasklist | grep cloudflared`
+3. If tunnel not running: `cloudflared tunnel --config config.yml run`
+4. Check OAuth secret matches in `.env` file
+5. Test tunnel directly: `curl https://hevy.angussoftware.dev/health`
 
 ### Tools Not Showing in Claude
 
@@ -248,19 +270,20 @@ taskkill /F /FI "WINDOWTITLE eq MCP Proxy*"
 If your computer suddenly loses power (cat on power button, etc.):
 
 ```bash
-# Step 1: Start everything
+# Step 1: Start all three services
 cd packages/mcp-http-proxy
 .\START_HEVY_DUAL_MODE.bat
 
 # Step 2: Restart Claude Code CLI
 # Close and reopen your terminal/IDE
 
-# Step 3: Verify
-curl http://127.0.0.1:8083/health
-curl http://127.0.0.1:8082/health
+# Step 3: Verify all three services
+curl http://127.0.0.1:8083/health    # Local proxy
+curl http://127.0.0.1:8082/health    # OAuth proxy
+curl https://hevy.angussoftware.dev/health  # Tunnel (optional)
 ```
 
-**Remember:** Proxies first, then Claude Code. Always.
+**Remember:** All three services → THEN Claude Code. Always.
 
 ## Summary
 
