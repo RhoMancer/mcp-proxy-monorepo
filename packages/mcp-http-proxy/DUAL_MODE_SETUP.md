@@ -232,7 +232,7 @@ taskkill /PID <PID> /F
 2. **Verify Cloudflare Tunnel is running:** `tasklist | grep cloudflared`
 3. If tunnel not running: `cloudflared tunnel --config config.yml run`
 4. Check OAuth secret matches in `.env` file
-5. Test tunnel directly: `curl https://hevy.angussoftware.dev/health`
+5. Test tunnel directly: `curl https://your-tunnel-url.example.com/health`
 
 ### Tools Not Showing in Claude
 
