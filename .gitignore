@@ -75,3 +75,8 @@ coverage/
 # User-specific configurations (keep in personal/user branch only)
 examples/user-specific.config.js
 .env.user
+
+# Gitleaks scan reports (local security verification)
+gitleaks-*.json
+gitleaks-*.txt
+gitleaks-summary.md
