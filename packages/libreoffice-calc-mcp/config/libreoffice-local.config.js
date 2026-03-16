@@ -31,8 +31,8 @@ const DEFAULT_LIBREOFFICE_PROGRAM_DIR = 'C:/Program Files/LibreOffice/program';
 export default {
   mcp: {
     // Use LibreOffice's bundled Python (required for UNO/pyuno compatibility)
-    // Note: Quoted path required due to spaces on Windows
-    command: `"${process.env.MCP_LIBREOFFICE_PYTHON || DEFAULT_LIBREOFFICE_PYTHON}"`,
+    // Note: With shell: true in spawn(), cmd.exe handles path quoting automatically
+    command: process.env.MCP_LIBREOFFICE_PYTHON || DEFAULT_LIBREOFFICE_PYTHON,
     args: ['-m', 'libreoffice_calc_mcp'],
     env: {
       LIBREOFFICE_HOST: process.env.MCP_LIBREOFFICE_HOST || 'localhost',
