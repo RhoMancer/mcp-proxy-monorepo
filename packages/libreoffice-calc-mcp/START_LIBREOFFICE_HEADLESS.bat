@@ -23,4 +23,5 @@ start "" "C:\Program Files\LibreOffice\program\soffice.exe" --accept="socket,hos
 
 echo LibreOffice starting...
 echo Wait 5 seconds for socket to be ready, then run proxy.
-timeout /t 5 /nobreak >nul
+REM Use ping for delay instead of timeout (avoids redirection issues)
+ping 127.0.0.1 -n 6 > nul

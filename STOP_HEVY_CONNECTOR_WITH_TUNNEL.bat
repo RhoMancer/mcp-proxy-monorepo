@@ -1,12 +1,16 @@
 @echo off
 REM ========================================================================
-REM Hevy MCP Connector - Stop Script
+REM Hevy MCP Connector - Stop Script (Dual Mode)
 REM ========================================================================
 REM
-REM This stops both the MCP Proxy and Cloudflare Tunnel.
-REM Use this when you're done using Claude Connectors.
+REM This stops BOTH Hevy MCP proxies and Cloudflare Tunnel:
+REM   - OAuth Proxy (port 8082)
+REM   - Local Proxy (port 8083)
+REM   - Cloudflare Tunnel
+REM
+REM Use this when you're done using Hevy with Claude.
 REM
 REM ========================================================================
 
 cd packages\mcp-http-proxy
-call STOP_PROXY_AND_TUNNEL.bat
+call STOP_HEVY_DUAL_MODE.bat
